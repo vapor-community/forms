@@ -1,4 +1,4 @@
-import Foundation
+import Node
 
 extension Int {
 
@@ -11,7 +11,7 @@ extension Int {
       if value < constraint {
         return .failure([.validationFailed(message: "Value must be at least \(constraint).")])
       }
-      return .success
+      return .success(Node(value))
     }
   }
 
@@ -24,7 +24,7 @@ extension Int {
       if value > constraint {
         return .failure([.validationFailed(message: "Value must be at most \(constraint).")])
       }
-      return .success
+      return .success(Node(value))
     }
   }
 
@@ -37,7 +37,7 @@ extension Int {
       if value != constraint {
         return .failure([.validationFailed(message: "Value must be exactly \(constraint).")])
       }
-      return .success
+      return .success(Node(value))
     }
   }
 

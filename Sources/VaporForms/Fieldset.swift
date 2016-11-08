@@ -28,8 +28,8 @@ public struct Fieldset {
       inData[fieldName] = value
       // Now try to validate it against the field
       switch fieldDefinition.validate(value) {
-      case .success:
-        validatedData[fieldName] = value
+      case .success(let validatedValue):
+        validatedData[fieldName] = validatedValue
       case .failure(let fieldErrors):
         fieldErrors.forEach { errors[fieldName].append($0) } // TODO: allow append a list not individual items
       }

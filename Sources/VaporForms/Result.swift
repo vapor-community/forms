@@ -1,7 +1,7 @@
 import Node
 
 public enum FieldValidationResult {
-  case success
+  case success(Node)
   case failure([FieldError])
 }
 

@@ -12,7 +12,7 @@ extension String {
       if value.characters.count < characters {
         return .failure([.validationFailed(message: "String must be at least \(characters) characters long.")])
       }
-      return .success
+      return .success(Node(value))
     }
   }
 
@@ -25,7 +25,7 @@ extension String {
       if value.characters.count > characters {
         return .failure([.validationFailed(message: "String must be at most \(characters) characters long.")])
       }
-      return .success
+      return .success(Node(value))
     }
   }
 
@@ -38,7 +38,7 @@ extension String {
       if value.characters.count != characters {
         return .failure([.validationFailed(message: "String must be exactly \(characters) characters long.")])
       }
-      return .success
+      return .success(Node(value))
     }
   }
 
@@ -50,7 +50,7 @@ extension String {
       } catch {
         return .failure([.validationFailed(message: "Enter a valid email address.")])
       }
-      return .success
+      return .success(Node(value))
     }
   }
 

@@ -18,7 +18,7 @@ public struct StringField: ValidatableField {
       if case .failure(let errors) = validator.validate(input: string) { return accumulated + errors }
       return accumulated
     }
-    return errors.isEmpty ? .success : .failure(errors)
+    return errors.isEmpty ? .success(Node(string)) : .failure(errors)
   }
 }
 
@@ -41,7 +41,7 @@ public struct IntegerField: ValidatableField {
       if case .failure(let errors) = validator.validate(input: int) { return accumulated + errors }
       return accumulated
     }
-    return errors.isEmpty ? .success : .failure(errors)
+    return errors.isEmpty ? .success(Node(int)) : .failure(errors)
   }
 }
 
@@ -65,7 +65,7 @@ public struct UnsignedIntegerField: ValidatableField {
       if case .failure(let errors) = validator.validate(input: uint) { return accumulated + errors }
       return accumulated
     }
-    return errors.isEmpty ? .success : .failure(errors)
+    return errors.isEmpty ? .success(Node(uint)) : .failure(errors)
   }
 }
 
@@ -82,6 +82,6 @@ public struct DoubleField: ValidatableField {
       if case .failure(let errors) = validator.validate(input: double) { return accumulated + errors }
       return accumulated
     }
-    return errors.isEmpty ? .success : .failure(errors)
+    return errors.isEmpty ? .success(Node(double)) : .failure(errors)
   }
 }

@@ -55,10 +55,12 @@ class VaporFormsTests: XCTestCase {
     ]
   }
 
-  func expectSuccess(_ test: FieldValidationResult, fail: () -> Void) {
+  func expectMatch(_ test: FieldValidationResult, _ match: Node, fail: () -> Void) {
     switch test {
-    case .success: break
-    case .failure: fail()
+    case .success(let value) where value == match:
+      break
+    default:
+      fail()
     }
   }
   func expectFailure(_ test: FieldValidationResult, fail: () -> Void) {
@@ -113,7 +115,7 @@ class VaporFormsTests: XCTestCase {
 
   func testFieldStringValidation() {
     // Correct value should succeed
-    expectSuccess(StringField().validate("string")) { XCTFail() }
+    expectMatch(StringField().validate("string"), Node("string")) { XCTFail() }
     // Incorrect value type should fail
     expectFailure(StringField().validate(nil)) { XCTFail() }
     // Value too short should fail
@@ -126,7 +128,7 @@ class VaporFormsTests: XCTestCase {
 
   func testFieldEmailValidation() {
     // Correct value should succeed
-    expectSuccess(StringField(String.EmailValidator()).validate("email@email.com")) { XCTFail() }
+    expectMatch(StringField(String.EmailValidator()).validate("email@email.com"), "email@email.com") { XCTFail() }
     // Incorrect value type should fail
     expectFailure(StringField(String.EmailValidator()).validate(nil)) { XCTFail() }
     // Value too long should fail
@@ -137,10 +139,10 @@ class VaporFormsTests: XCTestCase {
 
   func testFieldIntegerValidation() {
     // Correct value should succeed
-    expectSuccess(IntegerField().validate(42)) { XCTFail() }
-    expectSuccess(IntegerField().validate("42")) { XCTFail() }
-    expectSuccess(IntegerField().validate(-42)) { XCTFail() }
-    expectSuccess(IntegerField().validate("-42")) { XCTFail() }
+    expectMatch(IntegerField().validate(42), Node(42)) { XCTFail() }
+    expectMatch(IntegerField().validate("42"), Node(42)) { XCTFail() }
+    expectMatch(IntegerField().validate(-42), Node(-42)) { XCTFail() }
+    expectMatch(IntegerField().validate("-42"), Node(-42)) { XCTFail() }
     // Incorrect value type should fail
     expectFailure(IntegerField().validate(nil)) { XCTFail() }
     expectFailure(IntegerField().validate("I'm a string")) { XCTFail() }
@@ -157,8 +159,8 @@ class VaporFormsTests: XCTestCase {
 
   func testFieldUnsignedIntegerValidation() {
     // Correct value should succeed
-    expectSuccess(UnsignedIntegerField().validate(42)) { XCTFail() }
-    expectSuccess(UnsignedIntegerField().validate("42")) { XCTFail() }
+    expectMatch(UnsignedIntegerField().validate(42), Node(42)) { XCTFail() }
+    expectMatch(UnsignedIntegerField().validate("42"), Node(42)) { XCTFail() }
     // Incorrect value type should fail
     expectFailure(UnsignedIntegerField().validate(nil)) { XCTFail() }
     expectFailure(UnsignedIntegerField().validate("I'm a string")) { XCTFail() }
@@ -178,13 +180,13 @@ class VaporFormsTests: XCTestCase {
 
   func testFieldDoubleValidation() {
     // Correct value should succeed
-    expectSuccess(DoubleField().validate(42.42)) { XCTFail() }
-    expectSuccess(DoubleField().validate("42.42")) { XCTFail() }
-    expectSuccess(DoubleField().validate(-42.42)) { XCTFail() }
-    expectSuccess(DoubleField().validate("-42.42")) { XCTFail() }
+    expectMatch(DoubleField().validate(42.42), Node(42.42)) { XCTFail() }
+    expectMatch(DoubleField().validate("42.42"), Node(42.42)) { XCTFail() }
+    expectMatch(DoubleField().validate(-42.42), Node(-42.42)) { XCTFail() }
+    expectMatch(DoubleField().validate("-42.42"), Node(-42.42)) { XCTFail() }
     // OK to enter an int here too
-    expectSuccess(DoubleField().validate(42)) { XCTFail() }
-    expectSuccess(DoubleField().validate("42")) { XCTFail() }
+    expectMatch(DoubleField().validate(42), Node(42)) { XCTFail() }
+    expectMatch(DoubleField().validate("42"), Node(42)) { XCTFail() }
     // Incorrect value type should fail
     expectFailure(DoubleField().validate(nil)) { XCTFail() }
     expectFailure(DoubleField().validate("I'm a string")) { XCTFail() }
