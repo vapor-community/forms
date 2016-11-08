@@ -43,6 +43,7 @@ class VaporFormsTests: XCTestCase {
       ("testFieldIntegerValidation", testFieldIntegerValidation),
       ("testFieldUnsignedIntegerValidation", testFieldUnsignedIntegerValidation),
       ("testFieldDoubleValidation", testFieldDoubleValidation),
+      ("testFieldBoolValidation", testFieldBoolValidation),
       // Fieldset
       ("testSimpleFieldset", testSimpleFieldset),
       ("testSimpleFieldsetGetInvalidData", testSimpleFieldsetGetInvalidData),
@@ -198,6 +199,20 @@ class VaporFormsTests: XCTestCase {
     expectFailure(DoubleField(Double.ExactValidator(4.2)).validate(42)) { XCTFail() }
     // Precision
     expectFailure(DoubleField(Double.MinimumValidator(4.0000002)).validate(4.0000001)) { XCTFail() }
+  }
+
+  func testFieldBoolValidation() {
+    // Correct value should succeed
+    expectMatch(BoolField().validate(true), Node(true)) { XCTFail() }
+    expectMatch(BoolField().validate(false), Node(false)) { XCTFail() }
+    // True-ish values should succeed
+    expectMatch(BoolField().validate("true"), Node(true)) { XCTFail() }
+    expectMatch(BoolField().validate("t"), Node(true)) { XCTFail() }
+    expectMatch(BoolField().validate(1), Node(true)) { XCTFail() }
+    // False-ish values should succeed
+    expectMatch(BoolField().validate("false"), Node(false)) { XCTFail() }
+    expectMatch(BoolField().validate("f"), Node(false)) { XCTFail() }
+    expectMatch(BoolField().validate(0), Node(false)) { XCTFail() }
   }
 
   // MARK: Fieldset

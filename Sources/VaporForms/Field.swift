@@ -85,3 +85,19 @@ public struct DoubleField: ValidatableField {
     return errors.isEmpty ? .success(Node(double)) : .failure(errors)
   }
 }
+
+public struct BoolField: ValidatableField {
+  let validators: [FieldValidator<Bool>]
+  public init(_ validators: FieldValidator<Bool>...) {
+    self.validators = validators
+  }
+  public func validate(_ value: Node) -> FieldValidationResult {
+    // If POSTing from a `checkbox` style input, the key's absence means `false`.
+    let bool = value.bool ?? false
+    let errors: [FieldError] = validators.reduce([]) { accumulated, validator in
+      if case .failure(let errors) = validator.validate(input: bool) { return accumulated + errors }
+      return accumulated
+    }
+    return errors.isEmpty ? .success(Node(bool)) : .failure(errors)
+  }
+}
