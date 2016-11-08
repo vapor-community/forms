@@ -10,7 +10,10 @@ public struct StringField: ValidatableField {
     self.validators = validators
   }
   public func validate(_ value: Node) -> FieldValidationResult {
-    guard case .string(let string) = value else { return .failure([.incorrectValueType]) }
+    // In theory, this shouldn't ever really fail
+    guard let string = value.string else {
+      return .failure([.validationFailed(message: "Please enter valid text.")])
+    }
     let errors: [FieldError] = validators.reduce([]) { accumulated, validator in
       if case .failure(let errors) = validator.validate(input: string) { return accumulated + errors }
       return accumulated
@@ -25,14 +28,15 @@ public struct IntegerField: ValidatableField {
     self.validators = validators
   }
   public func validate(_ value: Node) -> FieldValidationResult {
-    guard case .number(let number) = value else { return .failure([.incorrectValueType]) }
-    switch number {
-    case .double:
-      return .failure([.validationFailed(message: "This value should be a whole number.")])
-    case .int, .uint:
-      break
+    // Retrieving value.int, if value is a Double, will force-convert it to an Int which is
+    // not what we want so we have to filter out all Doubles first.
+    // This has the unfortunate side-effect of excluding any Doubles which are in fact whole numbers.
+    if case .number(let number) = value, case .double = number {
+      return .failure([.validationFailed(message: "Please enter a whole number.")])
     }
-    guard let int = value.int else { return .failure([.incorrectValueType]) }
+    guard let int = value.int else {
+      return .failure([.validationFailed(message: "Please enter a whole number.")])
+    }
     let errors: [FieldError] = validators.reduce([]) { accumulated, validator in
       if case .failure(let errors) = validator.validate(input: int) { return accumulated + errors }
       return accumulated
@@ -47,16 +51,16 @@ public struct UnsignedIntegerField: ValidatableField {
     self.validators = validators
   }
   public func validate(_ value: Node) -> FieldValidationResult {
-    guard case .number(let number) = value else { return .failure([.incorrectValueType]) }
-    switch number {
-    case .double:
-      return .failure([.validationFailed(message: "This value should be a whole number.")])
-    case .int(let int) where int < 0:
-      return .failure([.validationFailed(message: "This value should be a positive number.")])
-    case .int, .uint:
-      break
+    // Filter out Doubles (see comments in IntegerField) and negative Ints first.
+    if case .number(let number) = value, case .double = number {
+      return .failure([.validationFailed(message: "Please enter a positive whole number.")])
     }
-    guard let uint = value.uint else { return .failure([.incorrectValueType]) }
+    if case .number(let number) = value, case .int(let int) = number, int < 0 {
+      return .failure([.validationFailed(message: "Please enter a positive whole number.")])
+    }
+    guard let uint = value.uint else {
+      return .failure([.validationFailed(message: "Please enter a positive whole number.")])
+    }
     let errors: [FieldError] = validators.reduce([]) { accumulated, validator in
       if case .failure(let errors) = validator.validate(input: uint) { return accumulated + errors }
       return accumulated
@@ -71,7 +75,9 @@ public struct DoubleField: ValidatableField {
     self.validators = validators
   }
   public func validate(_ value: Node) -> FieldValidationResult {
-    guard let double = value.double else { return .failure([.incorrectValueType]) }
+    guard let double = value.double else {
+      return .failure([.validationFailed(message: "Please enter a number.")])
+    }
     let errors: [FieldError] = validators.reduce([]) { accumulated, validator in
       if case .failure(let errors) = validator.validate(input: double) { return accumulated + errors }
       return accumulated

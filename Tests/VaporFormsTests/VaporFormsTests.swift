@@ -55,28 +55,28 @@ class VaporFormsTests: XCTestCase {
     ]
   }
 
-  func expectSuccess(_ test: FieldValidationResult) {
+  func expectSuccess(_ test: FieldValidationResult, fail: () -> Void) {
     switch test {
     case .success: break
-    case .failure: XCTFail()
+    case .failure: fail()
     }
   }
-  func expectFailure(_ test: FieldValidationResult) {
+  func expectFailure(_ test: FieldValidationResult, fail: () -> Void) {
     switch test {
-    case .success: XCTFail()
+    case .success: fail()
     case .failure: break
     }
   }
 
-  func expectSuccess(_ test: FieldsetValidationResult) {
+  func expectSuccess(_ test: FieldsetValidationResult, fail: () -> Void) {
     switch test {
     case .success: break
-    case .failure: XCTFail()
+    case .failure: fail()
     }
   }
-  func expectFailure(_ test: FieldsetValidationResult) {
+  func expectFailure(_ test: FieldsetValidationResult, fail: () -> Void) {
     switch test {
-    case .success: XCTFail()
+    case .success: fail()
     case .failure: break
     }
   }
@@ -85,7 +85,7 @@ class VaporFormsTests: XCTestCase {
 
   func testValidationErrorsDictionaryLiteral() {
     // Must be able to be instantiated by dictionary literal
-    let error1 = FieldError.incorrectValueType
+    let error1 = FieldError.requiredMissing
     let error2 = FieldError.requiredMissing
     let errors: FieldErrorCollection = ["key": [error1, error2]]
     XCTAssertEqual(errors["key"].count, 2)
@@ -99,7 +99,7 @@ class VaporFormsTests: XCTestCase {
 
   func testValidationErrorsCreateByAppending() {
     // Must be able to be instantiated mutably
-    let error1 = FieldError.incorrectValueType
+    let error1 = FieldError.requiredMissing
     let error2 = FieldError.requiredMissing
     var errors: FieldErrorCollection = [:]
     XCTAssertEqual(errors["key"].count, 0)
@@ -113,78 +113,89 @@ class VaporFormsTests: XCTestCase {
 
   func testFieldStringValidation() {
     // Correct value should succeed
-    expectSuccess(StringField().validate("string"))
+    expectSuccess(StringField().validate("string")) { XCTFail() }
     // Incorrect value type should fail
-    expectFailure(StringField().validate(nil))
+    expectFailure(StringField().validate(nil)) { XCTFail() }
     // Value too short should fail
-    expectFailure(StringField(String.MinimumLengthValidator(characters: 12)).validate("string"))
+    expectFailure(StringField(String.MinimumLengthValidator(characters: 12)).validate("string")) { XCTFail() }
     // Value too long should fail
-    expectFailure(StringField(String.MaximumLengthValidator(characters: 6)).validate("maxi string"))
+    expectFailure(StringField(String.MaximumLengthValidator(characters: 6)).validate("maxi string")) { XCTFail() }
     // Value not exact size should fail
-    expectFailure(StringField(String.ExactLengthValidator(characters: 6)).validate("wrong size"))
+    expectFailure(StringField(String.ExactLengthValidator(characters: 6)).validate("wrong size")) { XCTFail() }
   }
 
   func testFieldEmailValidation() {
     // Correct value should succeed
-    expectSuccess(StringField(String.EmailValidator()).validate("email@email.com"))
+    expectSuccess(StringField(String.EmailValidator()).validate("email@email.com")) { XCTFail() }
     // Incorrect value type should fail
-    expectFailure(StringField(String.EmailValidator()).validate(nil))
+    expectFailure(StringField(String.EmailValidator()).validate(nil)) { XCTFail() }
     // Value too long should fail
-    expectFailure(StringField(String.EmailValidator(), String.MaximumLengthValidator(characters: 6)).validate("email@email.com"))
+    expectFailure(StringField(String.EmailValidator(), String.MaximumLengthValidator(characters: 6)).validate("email@email.com")) { XCTFail() }
     // Value not of email type should fail
-    expectFailure(StringField(String.EmailValidator()).validate("not an email"))
+    expectFailure(StringField(String.EmailValidator()).validate("not an email")) { XCTFail() }
   }
 
   func testFieldIntegerValidation() {
     // Correct value should succeed
-    expectSuccess(IntegerField().validate(42))
+    expectSuccess(IntegerField().validate(42)) { XCTFail() }
+    expectSuccess(IntegerField().validate("42")) { XCTFail() }
+    expectSuccess(IntegerField().validate(-42)) { XCTFail() }
+    expectSuccess(IntegerField().validate("-42")) { XCTFail() }
     // Incorrect value type should fail
-    expectFailure(IntegerField().validate(nil))
-    expectFailure(IntegerField().validate("I'm a string"))
+    expectFailure(IntegerField().validate(nil)) { XCTFail() }
+    expectFailure(IntegerField().validate("I'm a string")) { XCTFail() }
     // Non-integer number should fail
-    expectFailure(IntegerField().validate(3.4))
+    expectFailure(IntegerField().validate(3.4)) { XCTFail() }
+    expectFailure(IntegerField().validate("3.4")) { XCTFail() }
     // Value too low should fail
-    expectFailure(IntegerField(Int.MinimumValidator(42)).validate(4))
+    expectFailure(IntegerField(Int.MinimumValidator(42)).validate(4)) { XCTFail() }
     // Value too high should fail
-    expectFailure(IntegerField(Int.MaximumValidator(42)).validate(420))
+    expectFailure(IntegerField(Int.MaximumValidator(42)).validate(420)) { XCTFail() }
     // Value not exact should fail
-    expectFailure(IntegerField(Int.ExactValidator(42)).validate(420))
+    expectFailure(IntegerField(Int.ExactValidator(42)).validate(420)) { XCTFail() }
   }
 
   func testFieldUnsignedIntegerValidation() {
     // Correct value should succeed
-    expectSuccess(UnsignedIntegerField().validate(42))
+    expectSuccess(UnsignedIntegerField().validate(42)) { XCTFail() }
+    expectSuccess(UnsignedIntegerField().validate("42")) { XCTFail() }
     // Incorrect value type should fail
-    expectFailure(UnsignedIntegerField().validate(nil))
-    expectFailure(UnsignedIntegerField().validate("I'm a string"))
+    expectFailure(UnsignedIntegerField().validate(nil)) { XCTFail() }
+    expectFailure(UnsignedIntegerField().validate("I'm a string")) { XCTFail() }
     // Non-integer number should fail
-    expectFailure(UnsignedIntegerField().validate(3.4))
+    expectFailure(UnsignedIntegerField().validate(3.4)) { XCTFail() }
+    expectFailure(UnsignedIntegerField().validate("3.4")) { XCTFail() }
     // Negative integer number should fail
-    expectFailure(UnsignedIntegerField().validate(-42))
+    expectFailure(UnsignedIntegerField().validate(-42)) { XCTFail() }
+    expectFailure(UnsignedIntegerField().validate("-42")) { XCTFail() }
     // Value too low should fail
-    expectFailure(UnsignedIntegerField(UInt.MinimumValidator(42)).validate(4))
+    expectFailure(UnsignedIntegerField(UInt.MinimumValidator(42)).validate(4)) { XCTFail() }
     // Value too high should fail
-    expectFailure(UnsignedIntegerField(UInt.MaximumValidator(42)).validate(420))
+    expectFailure(UnsignedIntegerField(UInt.MaximumValidator(42)).validate(420)) { XCTFail() }
     // Value not exact should fail
-    expectFailure(UnsignedIntegerField(UInt.ExactValidator(42)).validate(420))
+    expectFailure(UnsignedIntegerField(UInt.ExactValidator(42)).validate(420)) { XCTFail() }
   }
 
   func testFieldDoubleValidation() {
     // Correct value should succeed
-    expectSuccess(DoubleField().validate(42.42))
+    expectSuccess(DoubleField().validate(42.42)) { XCTFail() }
+    expectSuccess(DoubleField().validate("42.42")) { XCTFail() }
+    expectSuccess(DoubleField().validate(-42.42)) { XCTFail() }
+    expectSuccess(DoubleField().validate("-42.42")) { XCTFail() }
     // OK to enter an int here too
-    expectSuccess(DoubleField().validate(42))
+    expectSuccess(DoubleField().validate(42)) { XCTFail() }
+    expectSuccess(DoubleField().validate("42")) { XCTFail() }
     // Incorrect value type should fail
-    expectFailure(DoubleField().validate(nil))
-    expectFailure(DoubleField().validate("I'm a string"))
+    expectFailure(DoubleField().validate(nil)) { XCTFail() }
+    expectFailure(DoubleField().validate("I'm a string")) { XCTFail() }
     // Value too low should fail
-    expectFailure(DoubleField(Double.MinimumValidator(4.2)).validate(4.0))
+    expectFailure(DoubleField(Double.MinimumValidator(4.2)).validate(4.0)) { XCTFail() }
     // Value too high should fail
-    expectFailure(DoubleField(Double.MaximumValidator(4.2)).validate(5.6))
+    expectFailure(DoubleField(Double.MaximumValidator(4.2)).validate(5.6)) { XCTFail() }
     // Value not exact should fail
-    expectFailure(DoubleField(Double.ExactValidator(4.2)).validate(42))
+    expectFailure(DoubleField(Double.ExactValidator(4.2)).validate(42)) { XCTFail() }
     // Precision
-    expectFailure(DoubleField(Double.MinimumValidator(4.0000002)).validate(4.0000001))
+    expectFailure(DoubleField(Double.MinimumValidator(4.0000002)).validate(4.0000001)) { XCTFail() }
   }
 
   // MARK: Fieldset
@@ -196,7 +207,7 @@ class VaporFormsTests: XCTestCase {
       "integer": IntegerField(),
       "double": DoubleField()
     ])
-    expectSuccess(fieldset.validate([:]))
+    expectSuccess(fieldset.validate([:])) { XCTFail() }
   }
 
   func testSimpleFieldsetGetInvalidData() {
@@ -350,7 +361,7 @@ class VaporFormsTests: XCTestCase {
     ]))
     XCTAssertEqual(content["firstName"]?.string, "Peter")
     // Now validate
-    expectSuccess(fieldset.validate(content))
+    expectSuccess(fieldset.validate(content)) { XCTFail() }
   }
 
   func testValidateFormFromContentObject() {

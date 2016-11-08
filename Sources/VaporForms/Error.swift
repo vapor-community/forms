@@ -1,8 +1,7 @@
 import Vapor
+import Node
 
 public enum FieldError: Error {
-  // A Field instance has been passed a value of an incompatible type.
-  case incorrectValueType
   // Value did not pass validation. Message should be displayed to users.
   case validationFailed(message: String)
   // A required value was not included.
@@ -12,8 +11,6 @@ public enum FieldError: Error {
 
   public var localizedDescription: String {
     switch self {
-    case .incorrectValueType:
-      return "This field's value is of incorrect type."
     case .validationFailed(let message):
       return message
     case .requiredMissing:
@@ -22,9 +19,10 @@ public enum FieldError: Error {
       return "Invalid validated data."
     }
   }
+  
 }
 
-public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral {
+public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral, NodeRepresentable {
   public typealias Key = String
   public typealias Value = [FieldError]
 
@@ -52,6 +50,14 @@ public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral {
 
   public var isEmpty: Bool {
     return contents.isEmpty
+  }
+  
+  public func makeNode(context: Context) throws -> Node {
+    var nodeObject: [String: Node] = [:]
+    contents.forEach { key, value in
+      nodeObject[key] = Node(value.map { Node($0.localizedDescription) })
+    }
+    return Node(nodeObject)
   }
 
 }
