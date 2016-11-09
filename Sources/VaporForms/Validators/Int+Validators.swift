@@ -2,6 +2,9 @@ import Node
 
 extension Int {
 
+  /**
+    Validates that the value is greater than or equal to a constraint.
+  */
   public class MinimumValidator: FieldValidator<Int> {
     let constraint: Int
     public init(_ constraint: Int) {
@@ -15,6 +18,9 @@ extension Int {
     }
   }
 
+  /**
+    Validates that the value is less than or equal to a constraint.
+  */
   public class MaximumValidator: FieldValidator<Int> {
     let constraint: Int
     public init(_ constraint: Int) {
@@ -28,6 +34,9 @@ extension Int {
     }
   }
 
+  /**
+    Validates that the value is equal to a constraint.
+  */
   public class ExactValidator: FieldValidator<Int> {
     let constraint: Int
     public init(_ constraint: Int) {

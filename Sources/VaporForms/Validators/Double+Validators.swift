@@ -2,6 +2,9 @@ import Node
 
 extension Double {
 
+  /**
+    Validates that the value is greater than or equal to a constraint.
+  */
   public class MinimumValidator: FieldValidator<Double> {
     let constraint: Double
     public init(_ constraint: Double) {
@@ -15,6 +18,9 @@ extension Double {
     }
   }
 
+  /**
+    Validates that the value is less than or equal to a constraint.
+  */
   public class MaximumValidator: FieldValidator<Double> {
     let constraint: Double
     public init(_ constraint: Double) {
@@ -28,6 +34,9 @@ extension Double {
     }
   }
 
+  /**
+    Validates that the value is equal to a constraint.
+  */
   public class ExactValidator: FieldValidator<Double> {
     let constraint: Double
     public init(_ constraint: Double) {

@@ -3,7 +3,8 @@
 Brings simple, dynamic and re-usable web form handling to
 [Vapor](https://github.com/vapor/vapor).
 
-**Don't use this in production. Please.**
+This library is being used in production and should be safe, but as an early
+release the API is subject to change.
 
 ## Features
 
@@ -69,6 +70,9 @@ case .success(let data):
 case .failure(let errors, let data):
   // Use the field names and failed validation messages in `errors`,
   // and the passed-in values in `data` to re-render your form.
+  // If a single field fails multiple validators, you'll receive
+  // an error string for each rather than just failing at the first
+  // validator.
 }
 ```
 
@@ -87,14 +91,12 @@ struct UserForm: Form {
   ], requiring: ["firstName", "lastName", "email"])
   
   init(validated: [String: Node]) throws {
-    guard
-      let firstName = validated["firstName"]?.string,
-      let lastName = validated["lastName"]?.string,
-      let email = validated["email"]?.string
-    else { throw FieldError.invalidValidatedData }
-    self.firstName = firstName
-    self.lastName = lastName
-    self.email = email
+    firstName = validated["firstName"]!.string!
+    lastName = validated["lastName"]!.string!
+    email = validated["email"]!.string!
+    // validated is guaranteed to contain valid data, but
+    // this initializer throws in case you'd rather use guard let
+    // in place of implicitly-unwrapped optionals
   }
 }
 
@@ -113,7 +115,6 @@ drop.get { req in
 
 See the extensive tests file for full usage while in early development.
 Built-in validators are in the `Validators` directory.
-Code is not particularly well commented.
 Proper documentation to come.
 
 ## Known issues
@@ -138,6 +139,6 @@ property is implemented by the end-user and errors may arise.
 
 Vapor's `Node` is heavily used, as is `Content`. Unfortunately, the built-in
 [validation](https://vapor.github.io/documentation/guide/validation.html)
-is (despite the author's best efforts) almost completely unused. Future PRs
+is (despite the author's best efforts) almost completely unused. Future work
 may be able to converge the two validation mechanisms enough that this library
 doesn't need to supply its own.

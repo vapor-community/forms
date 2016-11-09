@@ -1,13 +1,24 @@
 import Vapor
 import Node
 
+/**
+  Represents an error in the field validation process.
+  While they conform to `Error`, these are never thrown by VaporForms;
+  instead, they are returned as part of a `...ValidationResult`.
+
+  The `localizedDescription` of these errors is intended to be displayed
+  to users as part of e.g. an HTML form.
+*/
 public enum FieldError: Error {
-  // Value did not pass validation. Message should be displayed to users.
+  /**
+    The value did not pass validation.
+    The `message` provides further information and can be displayed to users.
+  */
   case validationFailed(message: String)
-  // A required value was not included.
+  /**
+    The field was marked as required, but a value was not provided.
+  */
   case requiredMissing
-  // A Form was passed validated data which was incomplete
-  case invalidValidatedData
 
   public var localizedDescription: String {
     switch self {
@@ -15,21 +26,41 @@ public enum FieldError: Error {
       return message
     case .requiredMissing:
       return "This field is required."
-    case .invalidValidatedData:
-      return "Invalid validated data."
     }
   }
-  
+
 }
 
+/**
+  A custom key-value Collection containing arrays of `FieldError` values, each keyed
+  by a `String`.
+
+  This collection is used to represent all validation errors raised by a `Fieldset`.
+  The key is the field name, and the value is the array of errors relating to that field.
+
+  Subscripting is always safe: if the field does not exist in the collection, an empty
+  array will be returned.
+*/
 public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral, NodeRepresentable {
   public typealias Key = String
   public typealias Value = [FieldError]
 
   private var contents: [Key: Value]
 
-  // ["key": [error1, error2]]
-  // ["key": [error1], "key": [error2]]
+  /**
+    When creating an instance by a dictionary literal, setting a key multiple times
+    will append to the existing value, rather than replacing it. Therefore both of these
+    are correct:
+
+        ["fieldName": [error1, error2]]
+
+    and:
+
+        [
+          "fieldName": [error1],
+          "fieldName": [error2],
+        ]
+  */
   public init(dictionaryLiteral elements: (Key, Value)...) {
     contents = [:]
     for (key, value) in elements {
@@ -37,8 +68,14 @@ public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral, NodeR
     }
   }
 
-  // errors["key"].append(error1)
-  // errors["key"].append(error2)
+  /**
+    Since a missing key always returns an empty array, it is safe to always append to
+    this collection without needing to check for the existence of the key first. For
+    example:
+
+        errors["fieldName"].append(error1)
+        errors["fieldName"].append(error2)
+  */
   public subscript (key: Key) -> Value {
     get {
       return contents[key] ?? []
@@ -48,10 +85,13 @@ public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral, NodeR
     }
   }
 
+  /**
+    `true` if there are no errors in the collection.
+  */
   public var isEmpty: Bool {
     return contents.isEmpty
   }
-  
+
   public func makeNode(context: Context) throws -> Node {
     var nodeObject: [String: Node] = [:]
     contents.forEach { key, value in

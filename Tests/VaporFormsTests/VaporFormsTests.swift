@@ -285,14 +285,9 @@ class VaporFormsTests: XCTestCase {
       ])
 
       internal init(validated: [String: Node]) throws {
-        guard
-          let string = validated["string"]?.string,
-          let integer = validated["integer"]?.int,
-          let double = validated["double"]?.double
-        else { throw FieldError.invalidValidatedData }
-        self.string = string
-        self.integer = integer
-        self.double = double
+        string = validated["string"]!.string!
+        integer = validated["integer"]!.int!
+        double = validated["double"]!.double!
       }
     }
     do {
@@ -317,13 +312,9 @@ class VaporFormsTests: XCTestCase {
       ], requiring: ["string", "integer"])
 
       internal init(validated: [String: Node]) throws {
-        guard
-          let string = validated["string"]?.string,
-          let integer = validated["integer"]?.int
-          else { throw FieldError.invalidValidatedData }
-        self.string = string
-        self.integer = integer
-        self.double = validated["double"]?.double
+        string = validated["string"]!.string!
+        integer = validated["integer"]!.int!
+        double = validated["double"]?.double
       }
     }
     // Good validation should succeed

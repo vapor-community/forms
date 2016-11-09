@@ -2,6 +2,9 @@ import Node
 
 extension UInt {
 
+  /**
+    Validates that the value is greater than or equal to a constraint.
+  */
   public class MinimumValidator: FieldValidator<UInt> {
     let constraint: UInt
     public init(_ constraint: UInt) {
@@ -15,6 +18,9 @@ extension UInt {
     }
   }
 
+  /**
+    Validates that the value is less than or equal to a constraint.
+  */
   public class MaximumValidator: FieldValidator<UInt> {
     let constraint: UInt
     public init(_ constraint: UInt) {
@@ -28,6 +34,9 @@ extension UInt {
     }
   }
 
+  /**
+    Validates that the value is equal to a constraint.
+  */
   public class ExactValidator: FieldValidator<UInt> {
     let constraint: UInt
     public init(_ constraint: UInt) {

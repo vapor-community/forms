@@ -1,9 +1,17 @@
 import Vapor
 
+/**
+  A field which is able to validate a value.
+  Adopt this protocol to be able to be included in a `Fieldset`.
+*/
 public protocol ValidatableField {
   func validate(_: Node) -> FieldValidationResult
 }
 
+/**
+  A field which can receive a `String` value and optionally validate it before
+  returning a `FieldValidationResult`.
+*/
 public struct StringField: ValidatableField {
   let validators: [FieldValidator<String>]
   public init(_ validators: FieldValidator<String>...) {
@@ -22,6 +30,10 @@ public struct StringField: ValidatableField {
   }
 }
 
+/**
+  A field which can receive an `Int` value and optionally validate it before
+  returning a `FieldValidationResult`.
+*/
 public struct IntegerField: ValidatableField {
   let validators: [FieldValidator<Int>]
   public init(_ validators: FieldValidator<Int>...) {
@@ -45,6 +57,10 @@ public struct IntegerField: ValidatableField {
   }
 }
 
+/**
+  A field which can receive a `UInt` value and optionally validate it before
+  returning a `FieldValidationResult`.
+*/
 public struct UnsignedIntegerField: ValidatableField {
   let validators: [FieldValidator<UInt>]
   public init(_ validators: FieldValidator<UInt>...) {
@@ -69,6 +85,10 @@ public struct UnsignedIntegerField: ValidatableField {
   }
 }
 
+/**
+  A field which can receive a `Double` value and optionally validate it before
+  returning a `FieldValidationResult`.
+*/
 public struct DoubleField: ValidatableField {
   let validators: [FieldValidator<Double>]
   public init(_ validators: FieldValidator<Double>...) {
@@ -86,6 +106,10 @@ public struct DoubleField: ValidatableField {
   }
 }
 
+/**
+  A field which can receive a `Bool` value and optionally validate it before
+  returning a `FieldValidationResult`.
+*/
 public struct BoolField: ValidatableField {
   let validators: [FieldValidator<Bool>]
   public init(_ validators: FieldValidator<Bool>...) {

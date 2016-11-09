@@ -3,6 +3,9 @@ import Vapor
 
 extension String {
 
+  /**
+    Validates that the number of characters in the value is greater than or equal to a constraint.
+  */
   public class MinimumLengthValidator: FieldValidator<String> {
     let characters: Int
     public init(characters: Int) {
@@ -16,6 +19,9 @@ extension String {
     }
   }
 
+  /**
+    Validates that the number of characters in the value is less than or equal to a constraint.
+  */
   public class MaximumLengthValidator: FieldValidator<String> {
     let characters: Int
     public init(characters: Int) {
@@ -29,6 +35,9 @@ extension String {
     }
   }
 
+  /**
+    Validates that the number of characters in the value is equal to a constraint.
+  */
   public class ExactLengthValidator: FieldValidator<String> {
     let characters: Int
     public init(characters: Int) {
@@ -42,6 +51,11 @@ extension String {
     }
   }
 
+  /**
+    Validates that the the value is a valid email address string. Does not
+    validate that this email address actually exists, just that it is formatted
+    correctly.
+  */
   public class EmailValidator: FieldValidator<String> {
     override public init() {}
     override public func validate(input value: String) -> FieldValidationResult {

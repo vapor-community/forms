@@ -2,6 +2,24 @@ import Vapor
 import Node
 import Polymorphic
 
+/**
+  A struct which contains a list of fields, each with their validators attached,
+  and a list of field names which are required to receive a value for validation.
+
+  Instantiate this struct with your choice of field names and `ValidatableField`
+  instances, then call `validate()` with either a `Content` object (from
+  `request.data`) or programmatically with a `[String: Node]` dictionary.
+
+  You can validate any `Content` object, so that means POSTed HTML form data, JSON,
+  and GET query string data.
+
+  A fieldset can be simply stored in a variable, but is most powerful when paired
+  with a `Form`.
+
+  To validate incoming data, the fieldset pulls the value out of the data structure
+  using the field name, so if you are implementing an HTML form, the `name` of your
+  inputs should match the field names in your fieldset.
+*/
 public struct Fieldset {
   let fields: [String: ValidatableField]
   let requiredFieldNames: [String]
