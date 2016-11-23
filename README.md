@@ -22,8 +22,8 @@ Create a `Fieldset` on the fly:
 
 ```swift
 let fieldset = Fieldset([
-  "firstName": StringField(),
-  "lastName": StringField(),
+  "firstName": StringField(label: "First Name"),
+  "lastName": StringField(label: "Last Name"),
 ])
 ```
 
@@ -41,11 +41,11 @@ You can add multiple validators, too:
 
 ```swift
 let fieldset = Fieldset([
-  "firstName": StringField(
+  "firstName": StringField(label: "First Name",
     String.MinimumLengthValidator(characters: 3),
     String.MaximumLengthValidator(characters: 255),
   ),
-  "lastName": StringField(
+  "lastName": StringField(label: "Last Name",
     String.MinimumLengthValidator(characters: 3),
     String.MaximumLengthValidator(characters: 255),
   ),
@@ -72,14 +72,15 @@ Validation results:
 
 ```swift
 switch fieldset.validate(request.data) {
-case .success(let data):
+case .success(let validatedData):
+  // validatedData is guaranteed to contain correct field names and values.
   let user = User(
-    firstName: data["firstName"]?.string,
-    lastName: data["lastName"]?.string
+    firstName: validatedData["firstName"]!.string!,
+    lastName: validatedData["lastName"]!.string!,
   )
-case .failure(let errors, let data):
-  // Use the field names and failed validation messages in `errors`,
-  // and the passed-in values in `data` to re-render your form.
+case .failure:
+  // Use the field names and failed validation messages in `fieldset.errors`,
+  // and the passed-in values in `fieldset.values` to re-render your form.
   // If a single field fails multiple validators, you'll receive
   // an error string for each rather than just failing at the first
   // validator.
@@ -94,7 +95,7 @@ struct UserForm: Form {
   let lastName: String
   let email: String
   
-  static let fields = Fieldset([
+  static let fieldset = Fieldset([
     "firstName": StringField(),
     "lastName": StringField(),
     "email": StringField(String.EmailValidator()),
@@ -112,14 +113,14 @@ struct UserForm: Form {
 
 drop.get { req in
   switch try UserForm.validating(req.data) {
-  case .success(let formData):
+  case .success(let validatedData):
     // Return to your view, or use the properties to save a Model instance.
-    return "Hello \(formData.firstName) \(formData.lastName)"
-  case .failure(let invalidForm):
+    return "Hello \(validatedData.firstName) \(validatedData.lastName)"
+  case .failure(let fieldset):
     // Use the leaf tags #errorsForFormInput and #valueForFormInput on the
     // InvalidForm instance to re-render your form.
     return try drop.view.make("index", [
-      "form": invalidForm,
+      "fieldset": fieldset,
     ])
   }
 }

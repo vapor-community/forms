@@ -7,12 +7,14 @@ extension Double {
   */
   public class MinimumValidator: FieldValidator<Double> {
     let constraint: Double
-    public init(_ constraint: Double) {
+    let message: String?
+    public init(_ constraint: Double, message: String?=nil) {
       self.constraint = constraint
+      self.message = message
     }
     public override func validate(input value: Double) -> FieldValidationResult {
       if value < constraint {
-        return .failure([.validationFailed(message: "Value must be at least \(constraint).")])
+        return .failure([.validationFailed(message: message ?? "Value must be at least \(constraint).")])
       }
       return .success(Node(value))
     }
@@ -23,12 +25,14 @@ extension Double {
   */
   public class MaximumValidator: FieldValidator<Double> {
     let constraint: Double
-    public init(_ constraint: Double) {
+    let message: String?
+    public init(_ constraint: Double, message: String?=nil) {
       self.constraint = constraint
+      self.message = message
     }
     public override func validate(input value: Double) -> FieldValidationResult {
       if value > constraint {
-        return .failure([.validationFailed(message: "Value must be at most \(constraint).")])
+        return .failure([.validationFailed(message: message ?? "Value must be at most \(constraint).")])
       }
       return .success(Node(value))
     }
@@ -39,12 +43,14 @@ extension Double {
   */
   public class ExactValidator: FieldValidator<Double> {
     let constraint: Double
-    public init(_ constraint: Double) {
+    let message: String?
+    public init(_ constraint: Double, message: String?=nil) {
       self.constraint = constraint
+      self.message = message
     }
     public override func validate(input value: Double) -> FieldValidationResult {
       if value != constraint {
-        return .failure([.validationFailed(message: "Value must be exactly \(constraint).")])
+        return .failure([.validationFailed(message: message ?? "Value must be exactly \(constraint).")])
       }
       return .success(Node(value))
     }

@@ -7,12 +7,14 @@ extension Int {
   */
   public class MinimumValidator: FieldValidator<Int> {
     let constraint: Int
-    public init(_ constraint: Int) {
+    let message: String?
+    public init(_ constraint: Int, message: String?=nil) {
       self.constraint = constraint
+      self.message = message
     }
     public override func validate(input value: Int) -> FieldValidationResult {
       if value < constraint {
-        return .failure([.validationFailed(message: "Value must be at least \(constraint).")])
+        return .failure([.validationFailed(message: message ?? "Value must be at least \(constraint).")])
       }
       return .success(Node(value))
     }
@@ -23,12 +25,14 @@ extension Int {
   */
   public class MaximumValidator: FieldValidator<Int> {
     let constraint: Int
-    public init(_ constraint: Int) {
+    let message: String?
+    public init(_ constraint: Int, message: String?=nil) {
       self.constraint = constraint
+      self.message = message
     }
     public override func validate(input value: Int) -> FieldValidationResult {
       if value > constraint {
-        return .failure([.validationFailed(message: "Value must be at most \(constraint).")])
+        return .failure([.validationFailed(message: message ?? "Value must be at most \(constraint).")])
       }
       return .success(Node(value))
     }
@@ -39,12 +43,14 @@ extension Int {
   */
   public class ExactValidator: FieldValidator<Int> {
     let constraint: Int
-    public init(_ constraint: Int) {
+    let message: String?
+    public init(_ constraint: Int, message: String?=nil) {
       self.constraint = constraint
+      self.message = message
     }
     public override func validate(input value: Int) -> FieldValidationResult {
       if value != constraint {
-        return .failure([.validationFailed(message: "Value must be exactly \(constraint).")])
+        return .failure([.validationFailed(message: message ?? "Value must be exactly \(constraint).")])
       }
       return .success(Node(value))
     }

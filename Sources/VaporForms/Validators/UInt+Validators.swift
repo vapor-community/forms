@@ -7,12 +7,14 @@ extension UInt {
   */
   public class MinimumValidator: FieldValidator<UInt> {
     let constraint: UInt
-    public init(_ constraint: UInt) {
+    let message: String?
+    public init(_ constraint: UInt, message: String?=nil) {
       self.constraint = constraint
+      self.message = message
     }
     public override func validate(input value: UInt) -> FieldValidationResult {
       if value < constraint {
-        return .failure([.validationFailed(message: "Value must be at least \(constraint).")])
+        return .failure([.validationFailed(message: message ?? "Value must be at least \(constraint).")])
       }
       return .success(Node(value))
     }
@@ -23,12 +25,14 @@ extension UInt {
   */
   public class MaximumValidator: FieldValidator<UInt> {
     let constraint: UInt
-    public init(_ constraint: UInt) {
+    let message: String?
+    public init(_ constraint: UInt, message: String?=nil) {
       self.constraint = constraint
+      self.message = message
     }
     public override func validate(input value: UInt) -> FieldValidationResult {
       if value > constraint {
-        return .failure([.validationFailed(message: "Value must be at most \(constraint).")])
+        return .failure([.validationFailed(message: message ?? "Value must be at most \(constraint).")])
       }
       return .success(Node(value))
     }
@@ -39,12 +43,14 @@ extension UInt {
   */
   public class ExactValidator: FieldValidator<UInt> {
     let constraint: UInt
-    public init(_ constraint: UInt) {
+    let message: String?
+    public init(_ constraint: UInt, message: String?=nil) {
       self.constraint = constraint
+      self.message = message
     }
     public override func validate(input value: UInt) -> FieldValidationResult {
       if value != constraint {
-        return .failure([.validationFailed(message: "Value must be exactly \(constraint).")])
+        return .failure([.validationFailed(message: message ?? "Value must be exactly \(constraint).")])
       }
       return .success(Node(value))
     }

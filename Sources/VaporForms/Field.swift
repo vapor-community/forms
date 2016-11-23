@@ -5,6 +5,10 @@ import Vapor
   Adopt this protocol to be able to be included in a `Fieldset`.
 */
 public protocol ValidatableField {
+  /**
+    The UI implementor should use this label when displaying the fieldset.
+  */
+  var label: String { get }
   func validate(_: Node) -> FieldValidationResult
 }
 
@@ -13,8 +17,10 @@ public protocol ValidatableField {
   returning a `FieldValidationResult`.
 */
 public struct StringField: ValidatableField {
+  public let label: String
   let validators: [FieldValidator<String>]
-  public init(_ validators: FieldValidator<String>...) {
+  public init(label: String="", _ validators: FieldValidator<String>...) {
+    self.label = label
     self.validators = validators
   }
   public func validate(_ value: Node) -> FieldValidationResult {
@@ -35,8 +41,10 @@ public struct StringField: ValidatableField {
   returning a `FieldValidationResult`.
 */
 public struct IntegerField: ValidatableField {
+  public let label: String
   let validators: [FieldValidator<Int>]
-  public init(_ validators: FieldValidator<Int>...) {
+  public init(label: String="", _ validators: FieldValidator<Int>...) {
+    self.label = label
     self.validators = validators
   }
   public func validate(_ value: Node) -> FieldValidationResult {
@@ -62,8 +70,10 @@ public struct IntegerField: ValidatableField {
   returning a `FieldValidationResult`.
 */
 public struct UnsignedIntegerField: ValidatableField {
+  public let label: String
   let validators: [FieldValidator<UInt>]
-  public init(_ validators: FieldValidator<UInt>...) {
+  public init(label: String="", _ validators: FieldValidator<UInt>...) {
+    self.label = label
     self.validators = validators
   }
   public func validate(_ value: Node) -> FieldValidationResult {
@@ -90,8 +100,10 @@ public struct UnsignedIntegerField: ValidatableField {
   returning a `FieldValidationResult`.
 */
 public struct DoubleField: ValidatableField {
+  public let label: String
   let validators: [FieldValidator<Double>]
-  public init(_ validators: FieldValidator<Double>...) {
+  public init(label: String="", _ validators: FieldValidator<Double>...) {
+    self.label = label
     self.validators = validators
   }
   public func validate(_ value: Node) -> FieldValidationResult {
@@ -111,8 +123,10 @@ public struct DoubleField: ValidatableField {
   returning a `FieldValidationResult`.
 */
 public struct BoolField: ValidatableField {
+  public let label: String
   let validators: [FieldValidator<Bool>]
-  public init(_ validators: FieldValidator<Bool>...) {
+  public init(label: String="", _ validators: FieldValidator<Bool>...) {
+    self.label = label
     self.validators = validators
   }
   public func validate(_ value: Node) -> FieldValidationResult {

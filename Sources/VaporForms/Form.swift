@@ -14,7 +14,7 @@ public protocol Form {
   /**
     Store your fieldset in this static var.
   */
-  static var fields: Fieldset { get }
+  static var fieldset: Fieldset { get }
 
   // TODO: Does this need to throw? We guarantee that `validated` is valid data,
   // if the fieldset is set up correctly, so it should be safe to extract
@@ -57,15 +57,17 @@ public extension Form {
     This is the standard entry point for creating a validated form. Pass in a `Context`
     object such as `request.data` to receive a `FormValidationResult` which will either
     be a successful instantiation of a form with valid properties, or a validation
-    failure with helpful error messages split by field along with the data passed in
-    so that you can render it as initial values in your HTML form.
+    failure containing an instance of the fieldset with helpful error messages split by
+    field along with the data passed in so that you can render it as initial values in
+    your HTML form.
   */
   public static func validating(_ content: Content) throws -> FormValidationResult {
-    switch Self.fields.validate(content) {
-    case .failure(let errors, let invalidData):
-      return .failure(InvalidForm(errors: errors, values: invalidData))
-    case .success(let validData):
-      return .success(try Self(validated: validData))
+    var fieldset = Self.fieldset
+    switch fieldset.validate(content) {
+    case .failure:
+      return .failure(fieldset)
+    case .success(let data):
+      return .success(try Self(validated: data))
     }
   }
 

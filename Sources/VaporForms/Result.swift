@@ -40,19 +40,19 @@ public enum FieldsetValidationResult {
     convert to an Int value 42 before validating. The value returned here
     will be the Int.
   */
-  case success([String: Node])
+  case success(validated: [String: Node])
   /**
     The `Fieldset` did not pass at least one of the fieldset's validators,
-    or required values were missing. The first associated value is a
+    or required values were missing. `Fieldset.errors` is a
     keyed collection of fields and their errors, where the key is the field
     name and the value is an array of errors raised during that field's
     validation phase.
 
-    The second associated value is the dictionary of values which were validated
+    `Fieldset.values` is the dictionary of values which were validated
     against. You can use this dictionary when re-rendering your HTML form to
     pre-fill the fields with the user's invalid input.
   */
-  case failure(FieldErrorCollection, [String: Node])
+  case failure
 }
 
 /**
@@ -76,5 +76,5 @@ public enum FormValidationResult {
     against. You can use this dictionary when re-rendering your HTML form to
     pre-fill the fields with the user's invalid input.
   */
-  case failure(InvalidForm)
+  case failure(Fieldset)
 }

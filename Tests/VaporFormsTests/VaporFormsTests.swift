@@ -53,6 +53,8 @@ class VaporFormsTests: XCTestCase {
       // Binding
       ("testValidateFromContentObject", testValidateFromContentObject),
       ("testValidateFormFromContentObject", testValidateFormFromContentObject),
+      // Whole thing use case
+      ("testWholeFieldsetUsage", testWholeFieldsetUsage),
     ]
   }
 
@@ -62,6 +64,12 @@ class VaporFormsTests: XCTestCase {
       break
     default:
       fail()
+    }
+  }
+  func expectSuccess(_ test: FieldValidationResult, fail: () -> Void) {
+    switch test {
+    case .success: break
+    case .failure: fail()
     }
   }
   func expectFailure(_ test: FieldValidationResult, fail: () -> Void) {
@@ -173,6 +181,7 @@ class VaporFormsTests: XCTestCase {
     expectFailure(UnsignedIntegerField().validate("-42")) { XCTFail() }
     // Value too low should fail
     expectFailure(UnsignedIntegerField(UInt.MinimumValidator(42)).validate(4)) { XCTFail() }
+    expectSuccess(UnsignedIntegerField(UInt.MinimumValidator(42)).validate(44)) { XCTFail() }
     // Value too high should fail
     expectFailure(UnsignedIntegerField(UInt.MaximumValidator(42)).validate(420)) { XCTFail() }
     // Value not exact should fail
@@ -219,7 +228,7 @@ class VaporFormsTests: XCTestCase {
 
   func testSimpleFieldset() {
     // It should be possible to create and validate a Fieldset on the fly.
-    let fieldset = Fieldset([
+    var fieldset = Fieldset([
       "string": StringField(),
       "integer": IntegerField(),
       "double": DoubleField()
@@ -229,7 +238,7 @@ class VaporFormsTests: XCTestCase {
 
   func testSimpleFieldsetGetInvalidData() {
     // A fieldset passed invalid data should still hold a reference to that data
-    let fieldset = Fieldset([
+    var fieldset = Fieldset([
       "string": StringField(),
       "integer": IntegerField(),
       "double": DoubleField()
@@ -240,14 +249,14 @@ class VaporFormsTests: XCTestCase {
         "string": "MyString",
         "integer": 42,
       ])
-      guard case .failure(_, let data) = result else {
+      guard case .failure = result else {
         XCTFail()
         return
       }
       // For next rendering, I should be able to see that data which was passed
-      XCTAssertEqual(data["string"]?.string, "MyString")
-      XCTAssertEqual(data["integer"]?.int, 42)
-      XCTAssertNil(data["gobbledegook"]?.string)
+      XCTAssertEqual(fieldset.values["string"]?.string, "MyString")
+      XCTAssertEqual(fieldset.values["integer"]?.int, 42)
+      XCTAssertNil(fieldset.values["gobbledegook"]?.string)
     }
     // Try again with some really invalid data
     // Discussion: should the returned data be identical to what was sent, or should it be
@@ -259,13 +268,13 @@ class VaporFormsTests: XCTestCase {
         "double": "walrus",
         "montypython": 7.7,
       ])
-      guard case .failure(_, let data) = result else {
+      guard case .failure = result else {
         XCTFail()
         return
       }
-//      XCTAssertNil(data["string"]?.string) // see discussion above
-      XCTAssertNil(data["integer"]?.int)
-      XCTAssertNil(data["double"]?.double)
+//      XCTAssertNil(fieldset.values["string"]?.string) // see discussion above
+      XCTAssertNil(fieldset.values["integer"]?.int)
+      XCTAssertNil(fieldset.values["double"]?.double)
     }
   }
 
@@ -278,7 +287,7 @@ class VaporFormsTests: XCTestCase {
       let integer: Int
       let double: Double
 
-      static let fields = Fieldset([
+      static let fieldset = Fieldset([
         "string": StringField(),
         "integer": IntegerField(),
         "double": DoubleField()
@@ -305,7 +314,7 @@ class VaporFormsTests: XCTestCase {
       let integer: Int
       let double: Double?
 
-      static let fields = Fieldset([
+      static let fieldset = Fieldset([
         "string": StringField(),
         "integer": IntegerField(),
         "double": DoubleField()
@@ -354,7 +363,7 @@ class VaporFormsTests: XCTestCase {
 
   func testValidateFromContentObject() {
     // I want to simulate receiving a Request in POST and binding to it.
-    let fieldset = Fieldset([
+    var fieldset = Fieldset([
       "firstName": StringField(),
       "lastName": StringField(),
       "email": StringField(String.EmailValidator()),
@@ -380,7 +389,7 @@ class VaporFormsTests: XCTestCase {
       let email: String?
       let age: Int?
 
-      static let fields = Fieldset([
+      static let fieldset = Fieldset([
         "firstName": StringField(),
         "lastName": StringField(),
         "email": StringField(String.EmailValidator()),
@@ -404,8 +413,72 @@ class VaporFormsTests: XCTestCase {
     XCTAssertEqual(content["firstName"]?.string, "Peter")
     // Now validate
     do {
-      let result = try SimpleForm.validating(content)
+      let _ = try SimpleForm.validating(content)
     } catch { XCTFail(String(describing: error)) }
+  }
+  
+  // MARK: Whole thing
+  
+  func testWholeFieldsetUsage() {
+    // Test the usability of the whole thing.
+    // I want to define a fieldset which can be used to render a view.
+    // For that, the fields will need string labels.
+    var fieldset = Fieldset([
+      "name": StringField(label: "Your name",
+        String.MaximumLengthValidator(characters: 255)
+      ),
+      "age": UnsignedIntegerField(label: "Your age",
+        UInt.MinimumValidator(18, message: "You must be 18+.")
+      ),
+      "email": StringField(label: "Email address",
+        String.EmailValidator(),
+        String.MaximumLengthValidator(characters: 255)
+      ),
+    ])
+    // Now, I want to be able to render this fieldset in a view.
+    // That means I need to be able to convert it to a Node.
+    // The node should be able to tell me the `label` for each field.
+    do {
+      let fieldsetNode = try! fieldset.makeNode()
+      XCTAssertEqual(fieldsetNode["name"]?["label"]?.string, "Your name")
+      XCTAssertEqual(fieldsetNode["age"]?["label"]?.string, "Your age")
+      XCTAssertEqual(fieldsetNode["email"]?["label"]?.string, "Email address")
+      // .. Nice to have: other things for the field, such as 'type', 'maxlength'.
+      // .. For now, that's up to the view implementer to take care of.
+    }
+    // I've received data from my rendered view. Validate it.
+    do {
+      let validationResult = fieldset.validate([
+        "name": "Peter Pan",
+        "age": 11,
+        "email": "peter@neverland.net",
+      ])
+      // This should have failed
+      expectFailure(validationResult) { XCTFail() }
+      // Now I should be able to render the fieldset into a view
+      // with the passed-in data and also any errors.
+      let fieldsetNode = try! fieldset.makeNode()
+      XCTAssertEqual(fieldsetNode["name"]?["label"]?.string, "Your name")
+      XCTAssertEqual(fieldsetNode["name"]?["value"]?.string, "Peter Pan")
+      XCTAssertNil(fieldsetNode["name"]?["errors"])
+      XCTAssertEqual(fieldsetNode["age"]?["errors"]?[0]?.string, "You must be 18+.")
+    }
+    // Let's try and validate it correctly.
+    do {
+      let validationResult = fieldset.validate([
+        "name": "Peter Pan",
+        "age": 33,
+        "email": "peter@neverland.net",
+      ])
+      guard case .success(let validatedData) = validationResult else {
+        XCTFail()
+        return
+      }
+      XCTAssertEqual(validatedData["name"]!.string!, "Peter Pan")
+      XCTAssertEqual(validatedData["age"]!.int!, 33)
+      XCTAssertEqual(validatedData["email"]!.string!, "peter@neverland.net")
+      // I would now do something useful with this validated data.
+    }
   }
 
 }

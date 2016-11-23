@@ -8,12 +8,14 @@ extension String {
   */
   public class MinimumLengthValidator: FieldValidator<String> {
     let characters: Int
-    public init(characters: Int) {
+    let message: String?
+    public init(characters: Int, message: String?=nil) {
       self.characters = characters
+      self.message = message
     }
     override public func validate(input value: String) -> FieldValidationResult {
       if value.characters.count < characters {
-        return .failure([.validationFailed(message: "String must be at least \(characters) characters long.")])
+        return .failure([.validationFailed(message: message ?? "String must be at least \(characters) characters long.")])
       }
       return .success(Node(value))
     }
@@ -24,12 +26,14 @@ extension String {
   */
   public class MaximumLengthValidator: FieldValidator<String> {
     let characters: Int
-    public init(characters: Int) {
+    let message: String?
+    public init(characters: Int, message: String?=nil) {
       self.characters = characters
+      self.message = message
     }
     override public func validate(input value: String) -> FieldValidationResult {
       if value.characters.count > characters {
-        return .failure([.validationFailed(message: "String must be at most \(characters) characters long.")])
+        return .failure([.validationFailed(message: message ?? "String must be at most \(characters) characters long.")])
       }
       return .success(Node(value))
     }
@@ -40,12 +44,14 @@ extension String {
   */
   public class ExactLengthValidator: FieldValidator<String> {
     let characters: Int
-    public init(characters: Int) {
+    let message: String?
+    public init(characters: Int, message: String?=nil) {
       self.characters = characters
+      self.message = message
     }
     override public func validate(input value: String) -> FieldValidationResult {
       if value.characters.count != characters {
-        return .failure([.validationFailed(message: "String must be exactly \(characters) characters long.")])
+        return .failure([.validationFailed(message: message ?? "String must be exactly \(characters) characters long.")])
       }
       return .success(Node(value))
     }
@@ -57,12 +63,15 @@ extension String {
     correctly.
   */
   public class EmailValidator: FieldValidator<String> {
-    override public init() {}
+    let message: String?
+    public init(message: String?=nil) {
+      self.message = message
+    }
     override public func validate(input value: String) -> FieldValidationResult {
       do {
         try Email.validate(input: value)
       } catch {
-        return .failure([.validationFailed(message: "Enter a valid email address.")])
+        return .failure([.validationFailed(message: message ?? "Enter a valid email address.")])
       }
       return .success(Node(value))
     }

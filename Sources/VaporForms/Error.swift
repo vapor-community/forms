@@ -41,7 +41,7 @@ public enum FieldError: Error {
   Subscripting is always safe: if the field does not exist in the collection, an empty
   array will be returned.
 */
-public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral, NodeRepresentable {
+public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral {
   public typealias Key = String
   public typealias Value = [FieldError]
 
@@ -90,14 +90,6 @@ public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral, NodeR
   */
   public var isEmpty: Bool {
     return contents.isEmpty
-  }
-
-  public func makeNode(context: Context) throws -> Node {
-    var nodeObject: [String: Node] = [:]
-    contents.forEach { key, value in
-      nodeObject[key] = Node(value.map { Node($0.localizedDescription) })
-    }
-    return Node(nodeObject)
   }
 
 }

@@ -10,6 +10,10 @@ import Polymorphic
   instances, then call `validate()` with either a `Content` object (from
   `request.data`) or programmatically with a `[String: Node]` dictionary.
 
+  A fieldset which does not pass validation will have the `values` and `errors`
+  properties set. A fieldset can also be converted to a `Node` and passed directly
+  to a view renderer.
+
   You can validate any `Content` object, so that means POSTed HTML form data, JSON,
   and GET query string data.
 
@@ -21,18 +25,25 @@ import Polymorphic
   inputs should match the field names in your fieldset.
 */
 public struct Fieldset {
+  // These are the field definitions.
   let fields: [String: ValidatableField]
+  // These are the names of the fields that need answers.
   let requiredFieldNames: [String]
+  // This is passed-in data for the fields. Can be set manually, or is set at validation.
+  // This data is never passed to validate() and is used only for rendering purposes.
+  public var values: [String: Node] = [:]
+  // These are field validation errors. Set at validation.
+  public var errors: FieldErrorCollection = [:]
 
   public init(_ fields: [String: ValidatableField], requiring requiredFieldNames: [String]=[]) {
     self.fields = fields
     self.requiredFieldNames = requiredFieldNames
   }
 
-  public func validate(_ content: Content) -> FieldsetValidationResult {
+  public mutating func validate(_ content: Content) -> FieldsetValidationResult {
     var validatedData: [String: Node] = [:]
-    var inData: [String: Node] = [:]
-    var errors: FieldErrorCollection = [:]
+    values = [:]
+    errors = [:]
     fields.forEach { fieldName, fieldDefinition in
       // For each field, see if there's a matching value in the Content
       // Fail if no matching value for a required field
@@ -43,7 +54,7 @@ public struct Fieldset {
         return
       }
       // Store the passed-in value to be returned later
-      inData[fieldName] = value
+      values[fieldName] = value
       // Now try to validate it against the field
       switch fieldDefinition.validate(value) {
       case .success(let validatedValue):
@@ -53,15 +64,45 @@ public struct Fieldset {
       }
     }
     if !errors.isEmpty {
-      return .failure(errors, inData)
+      return .failure
     }
-    return .success(validatedData)
+    return .success(validated: validatedData)
   }
 
-  public func validate(_ data: [String: Node]) -> FieldsetValidationResult {
+  public mutating func validate(_ values: [String: Node]) -> FieldsetValidationResult {
     let content = Content()
-    content.append(Node(data))
+    content.append(Node(values))
     return validate(content)
   }
 
+}
+
+extension Fieldset: NodeRepresentable {
+  public func makeNode(context: Context) throws -> Node {
+    /*
+    [
+      "name": [
+        "label": "Your name",
+        "value": "bob",
+        "errors: [
+          "Name should be longer than 3 characters."
+      ],
+    ]
+    */
+    var object: [String: Node] = [:]
+    fields.forEach { fieldName, fieldDefinition in
+      var fieldNode: [String: Node] = [
+        "label": Node(fieldDefinition.label),
+      ]
+      if let value = values[fieldName] {
+        fieldNode["value"] = value
+      }
+      let fieldErrors = errors[fieldName]
+      if !fieldErrors.isEmpty {
+        fieldNode["errors"] = Node(fieldErrors.map { Node($0.localizedDescription) })
+      }
+      object[fieldName] = Node(fieldNode)
+    }
+    return Node(object)
+  }
 }
