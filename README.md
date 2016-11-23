@@ -6,6 +6,16 @@ Brings simple, dynamic and re-usable web form handling to
 This library is being used in production and should be safe, but as an early
 release the API is subject to change.
 
+Don't forget to add to your `providers` if you want to use built-in Leaf tags:
+
+```swift
+import Vapor
+import VaporForms
+
+let drop = Droplet()
+try drop.addProvider(VaporForms.Provider.self)
+```
+
 ## Features
 
 Create a `Fieldset` on the fly:
@@ -102,12 +112,30 @@ struct UserForm: Form {
 
 drop.get { req in
   switch try UserForm.validating(req.data) {
-  case .success(let form):
-    return "Hello \(form.firstName) \(form.lastName)"
-  case .failure(let errors, let data):
-    // Use the field names and failed validation messages in `errors`,
-    // and the passed-in values in `data` to re-render your form.
+  case .success(let formData):
+    // Return to your view, or use the properties to save a Model instance.
+    return "Hello \(formData.firstName) \(formData.lastName)"
+  case .failure(let invalidForm):
+    // Use the leaf tags #errorsForFormInput and #valueForFormInput on the
+    // InvalidForm instance to re-render your form.
+    return try drop.view.make("index", [
+      "form": invalidForm,
+    ])
   }
+}
+```
+
+Rendering a form with validation error messages:
+
+```html
+<label>Name</label>
+<input type='text' name='name' value='#valueForFormInput(form, "name")'>
+#errorsForFormInput(form, "name") {
+#if(self) {<ul>}
+#loop(self, "errorMessage") {
+  <li>#(errorMessage)</li>
+}
+#if(self) {</ul>}
 }
 ```
 

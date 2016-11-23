@@ -63,7 +63,7 @@ public extension Form {
   public static func validating(_ content: Content) throws -> FormValidationResult {
     switch Self.fields.validate(content) {
     case .failure(let errors, let invalidData):
-      return .failure(errors, invalidData)
+      return .failure(InvalidForm(errors: errors, values: invalidData))
     case .success(let validData):
       return .success(try Self(validated: validData))
     }

@@ -67,7 +67,7 @@ public enum FormValidationResult {
   case success(Form)
   /**
     The `Form` did not pass at least one of its fieldset's validators, or
-    required values were missing.  The first associated value is a
+    required values were missing. The first associated value is a
     keyed collection of fields and their errors, where the key is the field
     name and the value is an array of errors raised during that field's
     validation phase.
@@ -76,5 +76,5 @@ public enum FormValidationResult {
     against. You can use this dictionary when re-rendering your HTML form to
     pre-fill the fields with the user's invalid input.
   */
-  case failure(FieldErrorCollection, [String: Node])
+  case failure(InvalidForm)
 }
