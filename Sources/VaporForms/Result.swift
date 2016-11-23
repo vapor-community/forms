@@ -54,27 +54,3 @@ public enum FieldsetValidationResult {
   */
   case failure
 }
-
-/**
-  Returned after the attempted validation of a `Form`.
-*/
-public enum FormValidationResult {
-  /**
-    The `Form` was validated successfully, and an instance of that `Form` is
-    returned as the associated value. You can use the properties of the form
-    instance as valid data.
-  */
-  case success(Form)
-  /**
-    The `Form` did not pass at least one of its fieldset's validators, or
-    required values were missing. The first associated value is a
-    keyed collection of fields and their errors, where the key is the field
-    name and the value is an array of errors raised during that field's
-    validation phase.
-
-    The second associated value is the dictionary of values which were validated
-    against. You can use this dictionary when re-rendering your HTML form to
-    pre-fill the fields with the user's invalid input.
-  */
-  case failure(Fieldset)
-}

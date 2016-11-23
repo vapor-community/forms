@@ -93,3 +93,8 @@ public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral {
   }
 
 }
+
+
+public enum FormError: Error {
+  case validationFailed(fieldset: Fieldset)
+}

@@ -42,33 +42,32 @@ public protocol Form {
     work on the validated values before storing them in your form instance. For example,
     uppercasing or lowercasing strings, combining two or more fields into a new field.
   */
-  init(validated: [String: Node]) throws
+  init(validatedData: [String: Node]) throws
 }
 
 public extension Form {
-
-  public static func validating(_ data: [String: Node]) throws -> FormValidationResult {
-    let content = Content()
-    content.append(Node(data))
-    return try validating(content)
-  }
-
+  
   /**
-    This is the standard entry point for creating a validated form. Pass in a `Context`
-    object such as `request.data` to receive a `FormValidationResult` which will either
-    be a successful instantiation of a form with valid properties, or a validation
-    failure containing an instance of the fieldset with helpful error messages split by
-    field along with the data passed in so that you can render it as initial values in
-    your HTML form.
+   This is the standard entry point for creating a validated form. Pass in a `Context`
+   object such as `request.data` to receive either a successful instantiation of a form
+   with valid properties, or a validation failure containing an instance of the fieldset
+   with helpful error messages split by field along with the data passed in so that you
+   can render it as initial values in your HTML form.
   */
-  public static func validating(_ content: Content) throws -> FormValidationResult {
+  public init(validating content: Content) throws {
     var fieldset = Self.fieldset
     switch fieldset.validate(content) {
     case .failure:
-      return .failure(fieldset)
-    case .success(let data):
-      return .success(try Self(validated: data))
+      throw FormError.validationFailed(fieldset: fieldset)
+    case .success(let validatedData):
+      try self.init(validatedData: validatedData)
     }
+  }
+  
+  public init(validating data: [String: Node]) throws {
+    let content = Content()
+    content.append(Node(data))
+    try self.init(validating: content)
   }
 
 }

@@ -62,6 +62,7 @@ class VaporFormsTests: XCTestCase {
       ("testTagLabelForField", testTagLabelForField),
       // Whole thing use case
       ("testWholeFieldsetUsage", testWholeFieldsetUsage),
+      ("testWholeFormUsage", testWholeFormUsage),
     ]
   }
 
@@ -300,14 +301,14 @@ class VaporFormsTests: XCTestCase {
         "double": DoubleField()
       ])
 
-      internal init(validated: [String: Node]) throws {
-        string = validated["string"]!.string!
-        integer = validated["integer"]!.int!
-        double = validated["double"]!.double!
+      internal init(validatedData: [String: Node]) throws {
+        string = validatedData["string"]!.string!
+        integer = validatedData["integer"]!.int!
+        double = validatedData["double"]!.double!
       }
     }
     do {
-      let _ = try SimpleForm.validating([
+      let _ = try SimpleForm(validating: [
         "string": "String",
         "integer": 1,
         "double": 2,
@@ -327,15 +328,15 @@ class VaporFormsTests: XCTestCase {
         "double": DoubleField()
       ], requiring: ["string", "integer"])
 
-      internal init(validated: [String: Node]) throws {
-        string = validated["string"]!.string!
-        integer = validated["integer"]!.int!
-        double = validated["double"]?.double
+      internal init(validatedData: [String: Node]) throws {
+        string = validatedData["string"]!.string!
+        integer = validatedData["integer"]!.int!
+        double = validatedData["double"]?.double
       }
     }
     // Good validation should succeed
     do {
-      let _ = try SimpleForm.validating([
+      let _ = try SimpleForm(validating: [
         "string": "String",
         "integer": 1,
         "double": 2,
@@ -343,26 +344,26 @@ class VaporFormsTests: XCTestCase {
     } catch { XCTFail(String(describing: error)) }
     // One invalid value should fail
     do {
-      let _ = try SimpleForm.validating([
+      let _ = try SimpleForm(validating: [
         "string": "String",
         "integer": "INVALID",
         "double": 2,
       ])
-    } catch is FieldErrorCollection {
+    } catch FormError.validationFailed {
     } catch { XCTFail(String(describing: error)) }
     // Missing optional value should succeed
     do {
-      let _ = try SimpleForm.validating([
+      let _ = try SimpleForm(validating: [
         "string": "String",
         "integer": 1,
       ])
     } catch { XCTFail(String(describing: error)) }
     // Missing required value should fail
     do {
-      let _ = try SimpleForm.validating([
+      let _ = try SimpleForm(validating: [
         "string": "String",
       ])
-    } catch is FieldErrorCollection {
+    } catch FormError.validationFailed {
     } catch { XCTFail(String(describing: error)) }
   }
 
@@ -403,11 +404,11 @@ class VaporFormsTests: XCTestCase {
         "age": IntegerField(),
       ])
 
-      internal init(validated: [String: Node]) throws {
-        firstName = validated["firstName"]?.string
-        lastName = validated["lastName"]?.string
-        email = validated["email"]?.string
-        age = validated["age"]?.int
+      internal init(validatedData: [String: Node]) throws {
+        firstName = validatedData["firstName"]?.string
+        lastName = validatedData["lastName"]?.string
+        email = validatedData["email"]?.string
+        age = validatedData["age"]?.int
       }
     }
     // request.data is a Content object. I need to create a Content object.
@@ -420,7 +421,7 @@ class VaporFormsTests: XCTestCase {
     XCTAssertEqual(content["firstName"]?.string, "Peter")
     // Now validate
     do {
-      let _ = try SimpleForm.validating(content)
+      let _ = try SimpleForm(validating: content)
     } catch { XCTFail(String(describing: error)) }
   }
   
@@ -551,6 +552,70 @@ class VaporFormsTests: XCTestCase {
       XCTAssertEqual(validatedData["email"]!.string!, "peter@neverland.net")
       // I would now do something useful with this validated data.
     }
+  }
+  
+  func testWholeFormUsage() {
+    // Test the usability of a Form.
+    struct SimpleForm: Form {
+      let name: String
+      let age: UInt
+      let email: String?
+      static let fieldset = Fieldset([
+        "name": StringField(label: "Your name",
+          String.MaximumLengthValidator(characters: 255)
+        ),
+        "age": UnsignedIntegerField(label: "Your age",
+          UInt.MinimumValidator(18, message: "You must be 18+.")
+        ),
+        "email": StringField(label: "Email address",
+          String.EmailValidator(),
+          String.MaximumLengthValidator(characters: 255)
+        ),
+      ], requiring: ["name", "age"])
+      internal init(validatedData: [String: Node]) throws {
+        name = validatedData["name"]!.string!
+        age = validatedData["age"]!.uint!
+        email = validatedData["email"]?.string
+      }
+    }
+    // I have defined a form with a fieldset with labels. Test
+    // that I can properly render it.
+    do {
+      let fieldsetNode = try! SimpleForm.fieldset.makeNode()
+      XCTAssertEqual(fieldsetNode["name"]?["label"]?.string, "Your name")
+      XCTAssertEqual(fieldsetNode["age"]?["label"]?.string, "Your age")
+      XCTAssertEqual(fieldsetNode["email"]?["label"]?.string, "Email address")
+    }
+    // I've received data from my rendered view. Validate it.
+    do {
+      let _ = try SimpleForm(validating: [
+        "name": "Peter Pan",
+        "age": 11,
+        "email": "peter@neverland.net",
+      ])
+      // This should not succeed
+      XCTFail()
+    } catch FormError.validationFailed(let fieldset) {
+      // Now I should be able to render the fieldset into a view
+      // with the passed-in data and also any errors.
+      let fieldsetNode = try! fieldset.makeNode()
+      XCTAssertEqual(fieldsetNode["name"]?["label"]?.string, "Your name")
+      XCTAssertEqual(fieldsetNode["name"]?["value"]?.string, "Peter Pan")
+      XCTAssertNil(fieldsetNode["name"]?["errors"])
+      XCTAssertEqual(fieldsetNode["age"]?["errors"]?[0]?.string, "You must be 18+.")
+    } catch { XCTFail() }
+    // Let's try and validate it correctly.
+    do {
+      let form = try SimpleForm(validating: [
+        "name": "Peter Pan",
+        "age": 33,
+        "email": "peter@neverland.net",
+      ])
+      XCTAssertEqual(form.name, "Peter Pan")
+      XCTAssertEqual(form.age, 33)
+      XCTAssertEqual(form.email, "peter@neverland.net")
+      // I would now do something useful with this validated data.
+    } catch { XCTFail() }
   }
 
 }

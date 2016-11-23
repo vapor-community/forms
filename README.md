@@ -101,24 +101,25 @@ struct UserForm: Form {
     "email": StringField(String.EmailValidator()),
   ], requiring: ["firstName", "lastName", "email"])
   
-  init(validated: [String: Node]) throws {
+  init(validatedData: [String: Node]) throws {
+    // validatedData is guaranteed to contain correct field names and values.
     firstName = validated["firstName"]!.string!
     lastName = validated["lastName"]!.string!
     email = validated["email"]!.string!
-    // validated is guaranteed to contain valid data, but
-    // this initializer throws in case you'd rather use guard let
-    // in place of implicitly-unwrapped optionals
   }
 }
+```
 
-drop.get { req in
-  switch try UserForm.validating(req.data) {
-  case .success(let validatedData):
+Now you can easily and type-safely access the results of your form validation.
+
+```swift
+drop.get { request in
+  do {
+    let form = try UserForm(validating: request.data)
     // Return to your view, or use the properties to save a Model instance.
-    return "Hello \(validatedData.firstName) \(validatedData.lastName)"
-  case .failure(let fieldset):
-    // Use the leaf tags #errorsForFormInput and #valueForFormInput on the
-    // InvalidForm instance to re-render your form.
+    return "Hello \(form.firstName) \(form.lastName)"
+  } catch FormError.validationFailed(let fieldset) {
+    // Use the leaf tags on the fieldset to re-render your form.
     return try drop.view.make("index", [
       "fieldset": fieldset,
     ])
