@@ -130,14 +130,10 @@ Rendering a form with validation error messages:
 
 ```html
 <label>Name</label>
-<input type='text' name='name' value='#valueForFormInput(form, "name")'>
-#errorsForFormInput(form, "name") {
-#if(self) {<ul>}
-#loop(self, "errorMessage") {
-  <li>#(errorMessage)</li>
-}
-#if(self) {</ul>}
-}
+<input type='text' name='name' value='#valueForField(fieldset, "name")'>
+#ifFieldHasErrors(fieldset, "name") { <ul class="errorlist"> }
+#loopErrorsForField(fieldset, "name", "message") { <li>#(message)</li> }
+#ifFieldHasErrors(fieldset, "name") { </ul> }
 ```
 
 ## Documentation

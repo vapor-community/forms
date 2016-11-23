@@ -6,7 +6,7 @@ public final class Provider: Vapor.Provider {
 
   public func beforeRun(_ drop: Droplet) {
     let stem = (drop.view as? LeafRenderer)?.stem
-    let tags: [Tag] = [ErrorsForFormInput(), ValueForFormInput()]
+    let tags: [Tag] = [ErrorsForField(), IfFieldHasErrors(), LabelForField(), LoopErrorsForField(), ValueForField()]
     tags.forEach {
       stem?.register($0)
     }

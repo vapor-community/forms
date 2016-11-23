@@ -1,6 +1,7 @@
 import XCTest
-import VaporForms
+@testable import VaporForms
 import Vapor
+import Leaf
 
 /**
  Layout of the vapor-forms library
@@ -53,6 +54,12 @@ class VaporFormsTests: XCTestCase {
       // Binding
       ("testValidateFromContentObject", testValidateFromContentObject),
       ("testValidateFormFromContentObject", testValidateFormFromContentObject),
+      // Leaf tags
+      ("testTagErrorsForField", testTagErrorsForField),
+      ("testTagIfFieldHasErrors", testTagIfFieldHasErrors),
+      ("testTagLoopErrorsForField", testTagLoopErrorsForField),
+      ("testTagValueForField", testTagValueForField),
+      ("testTagLabelForField", testTagLabelForField),
       // Whole thing use case
       ("testWholeFieldsetUsage", testWholeFieldsetUsage),
     ]
@@ -417,10 +424,75 @@ class VaporFormsTests: XCTestCase {
     } catch { XCTFail(String(describing: error)) }
   }
   
+  // MARK: Leaf tags
+  
+  func testTagErrorsForField() {
+    let stem = Stem(workingDirectory: "")
+    stem.register(ErrorsForField())
+    let leaf = try! stem.spawnLeaf(raw: "#errorsForField(fieldset, \"fieldName\") { #loop(self, \"message\") { #(message) } }")
+    var fieldset = Fieldset(["fieldName": StringField()])
+    fieldset.errors["fieldName"].append(FieldError.validationFailed(message: "Fail"))
+    let context = Context(["fieldset": try! fieldset.makeNode()])
+    let rendered = try! stem.render(leaf, with: context).string
+    XCTAssertEqual(rendered, "Fail\n")
+  }
+  
+  func testTagIfFieldHasErrors() {
+    let stem = Stem(workingDirectory: "")
+    stem.register(IfFieldHasErrors())
+    let leaf = try! stem.spawnLeaf(raw: "#ifFieldHasErrors(fieldset, \"fieldName\") { HasErrors }")
+    do {
+      var fieldset = Fieldset(["fieldName": StringField()])
+      fieldset.errors["fieldName"].append(FieldError.requiredMissing)
+      let context = Context(["fieldset": try! fieldset.makeNode()])
+      let rendered = try! stem.render(leaf, with: context).string
+      XCTAssertEqual(rendered, "HasErrors")
+    }
+    do {
+      let fieldset = Fieldset(["fieldName": StringField()])
+      let context = Context(["fieldset": try! fieldset.makeNode()])
+      let rendered = try! stem.render(leaf, with: context).string
+      XCTAssertEqual(rendered, "")
+    }
+  }
+  
+  func testTagLoopErrorsForField() {
+    let stem = Stem(workingDirectory: "")
+    stem.register(LoopErrorsForField())
+    let leaf = try! stem.spawnLeaf(raw: "#loopErrorsForField(fieldset, \"fieldName\", \"message\") { #(message) }")
+    var fieldset = Fieldset(["fieldName": StringField()])
+    fieldset.errors["fieldName"].append(FieldError.validationFailed(message: "Fail1"))
+    fieldset.errors["fieldName"].append(FieldError.validationFailed(message: "Fail2"))
+    let context = Context(["fieldset": try! fieldset.makeNode()])
+    let rendered = try! stem.render(leaf, with: context).string
+    XCTAssertEqual(rendered, "Fail1\nFail2\n")
+  }
+  
+  func testTagValueForField() {
+    let stem = Stem(workingDirectory: "")
+    stem.register(ValueForField())
+    let leaf = try! stem.spawnLeaf(raw: "#valueForField(fieldset, \"fieldName\")!")
+    var fieldset = Fieldset(["fieldName": StringField()])
+    fieldset.values = ["fieldName": "FieldValue"]
+    let context = Context(["fieldset": try! fieldset.makeNode()])
+    let rendered = try! stem.render(leaf, with: context).string
+    XCTAssertEqual(rendered, "FieldValue!")
+  }
+  
+  func testTagLabelForField() {
+    let stem = Stem(workingDirectory: "")
+    stem.register(LabelForField())
+    let leaf = try! stem.spawnLeaf(raw: "#labelForField(fieldset, \"fieldName\")!")
+    let fieldset = Fieldset(["fieldName": StringField(label: "NameLabel")])
+    let context = Context(["fieldset": try! fieldset.makeNode()])
+    let rendered = try! stem.render(leaf, with: context).string
+    XCTAssertEqual(rendered, "NameLabel!")
+  }
+  
   // MARK: Whole thing
   
   func testWholeFieldsetUsage() {
-    // Test the usability of the whole thing.
+    // Test the usability of a Fieldset.
     // I want to define a fieldset which can be used to render a view.
     // For that, the fields will need string labels.
     var fieldset = Fieldset([
