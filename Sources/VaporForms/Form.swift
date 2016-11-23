@@ -46,7 +46,7 @@ public protocol Form {
 }
 
 public extension Form {
-  
+
   /**
    This is the standard entry point for creating a validated form. Pass in a `Context`
    object such as `request.data` to receive either a successful instantiation of a form
@@ -63,7 +63,7 @@ public extension Form {
       try self.init(validatedData: validatedData)
     }
   }
-  
+
   public init(validating data: [String: Node]) throws {
     let content = Content()
     content.append(Node(data))

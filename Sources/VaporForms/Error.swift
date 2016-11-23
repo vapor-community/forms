@@ -95,6 +95,13 @@ public struct FieldErrorCollection: Error, ExpressibleByDictionaryLiteral {
 }
 
 
+/**
+  Represents an error in validating a Form.
+*/
 public enum FormError: Error {
+  /**
+    Validation of the Form failed. The Fieldset instance is returned with
+   `errors` and `values` properties set to help with re-rendering the form.
+  */
   case validationFailed(fieldset: Fieldset)
 }

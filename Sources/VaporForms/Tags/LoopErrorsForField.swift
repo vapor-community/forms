@@ -2,7 +2,7 @@ import Leaf
 
 public final class LoopErrorsForField: Tag {
   public let name = "loopErrorsForField"
-  
+
   // Arg1: Fieldset
   // Arg2: Field name
   // Arg3: Constant name in loop
@@ -17,7 +17,7 @@ public final class LoopErrorsForField: Tag {
     else { return nil }
     return .array(errors.map { [constant: $0] })
   }
-  
+
   public func render(stem: Stem, context: Context, value: Node?, leaf: Leaf) throws -> Bytes {
     guard let array = value?.nodeArray else { return "".bytes }
     func renderItem(_ item: Node) throws -> Bytes {

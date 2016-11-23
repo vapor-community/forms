@@ -2,11 +2,11 @@ import Leaf
 
 public final class IfFieldHasErrors: Tag {
   public let name = "ifFieldHasErrors"
-  
+
   public func run(stem: Stem, context: Context, tagTemplate: TagTemplate, arguments: [Argument]) throws -> Node? {
     return nil
   }
-  
+
   // Arg1: Fieldset
   // Arg2: Field name
   // Render if there are errors in the field's errors array
