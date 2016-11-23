@@ -12,7 +12,6 @@ public final class LabelForField: BasicTag {
       let fieldName = arguments[1].value?.string,
       let label = fieldset[fieldName]?["label"]
     else { return nil }
-    print("label is \(label)")
     return label
   }
 }
