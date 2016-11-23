@@ -10,6 +10,12 @@ import Polymorphic
   instances, then call `validate()` with either a `Content` object (from
   `request.data`) or programmatically with a `[String: Node]` dictionary.
 
+  If you have set a `finalValidationBlock`, then this block will be called after
+  all fields have been validated. It won't be called if any fields have failed,
+  so you can be sure that the data in `values` is clean. Use this closure to check
+  any fields which depend on each other, and add to `errors` if the fieldset does
+  not pass validation.
+
   A fieldset which does not pass validation will have the `values` and `errors`
   properties set. A fieldset can also be converted to a `Node` and passed directly
   to a view renderer.
@@ -29,15 +35,18 @@ public struct Fieldset {
   let fields: [String: ValidatableField]
   // These are the names of the fields that need answers.
   let requiredFieldNames: [String]
+  // This block will be called after field validation for whole-fieldset validation.
+  let finalValidationBlock: ((inout Fieldset) -> Void)?
   // This is passed-in data for the fields. Can be set manually, or is set at validation.
   // This data is never passed to validate() and is used only for rendering purposes.
   public var values: [String: Node] = [:]
   // These are field validation errors. Set at validation.
   public var errors: FieldErrorCollection = [:]
 
-  public init(_ fields: [String: ValidatableField], requiring requiredFieldNames: [String]=[]) {
+  public init(_ fields: [String: ValidatableField], requiring requiredFieldNames: [String]=[], finalValidationBlock: ((inout Fieldset) -> Void)?=nil) {
     self.fields = fields
     self.requiredFieldNames = requiredFieldNames
+    self.finalValidationBlock = finalValidationBlock
   }
 
   public mutating func validate(_ content: Content) -> FieldsetValidationResult {
@@ -63,6 +72,11 @@ public struct Fieldset {
         fieldErrors.forEach { errors[fieldName].append($0) } // TODO: allow append a list not individual items
       }
     }
+    // Do any whole-form validation if the fields themselves validated fine
+    if errors.isEmpty {
+      finalValidationBlock?(&self)
+    }
+    // Now return
     if !errors.isEmpty {
       return .failure
     }

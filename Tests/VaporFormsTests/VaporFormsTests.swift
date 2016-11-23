@@ -48,6 +48,7 @@ class VaporFormsTests: XCTestCase {
       // Fieldset
       ("testSimpleFieldset", testSimpleFieldset),
       ("testSimpleFieldsetGetInvalidData", testSimpleFieldsetGetInvalidData),
+      ("testSimpleFieldsetWithPostValidation", testSimpleFieldsetWithPostValidation),
       // Form
       ("testSimpleForm", testSimpleForm),
       ("testFormValidation", testFormValidation),
@@ -63,6 +64,7 @@ class VaporFormsTests: XCTestCase {
       // Whole thing use case
       ("testWholeFieldsetUsage", testWholeFieldsetUsage),
       ("testWholeFormUsage", testWholeFormUsage),
+      ("testSampleLoginForm", testSampleLoginForm),
     ]
   }
 
@@ -286,6 +288,38 @@ class VaporFormsTests: XCTestCase {
     }
   }
 
+  func testSimpleFieldsetWithPostValidation() {
+    // This fieldset validates the whole fieldset after validating individual inputs.
+    do {
+      var fieldset = Fieldset([
+        "string": StringField(),
+        "integer": IntegerField(),
+        "double": DoubleField()
+      ]) { fieldset in
+        fieldset.errors["string"].append(FieldError.validationFailed(message: "Always fail"))
+      }
+      expectFailure(fieldset.validate([:])) { XCTFail() }
+    }
+    // This fieldset validates a bit more intelligently
+    do {
+      var fieldset = Fieldset([
+        "string": StringField(),
+        "integer": IntegerField(),
+        "double": DoubleField()
+      ], requiring: ["string"]) { fieldset in
+        if fieldset.values["string"]?.string != "Charles" {
+          fieldset.errors["string"].append(FieldError.validationFailed(message: "String must be Charles"))
+        }
+      }
+      switch fieldset.validate(["string": "Richard"]) {
+      case .success:
+        XCTFail()
+      case .failure:
+        XCTAssertEqual(fieldset.errors["string"][0].localizedDescription, "String must be Charles")
+      }
+    }
+  }
+
   // MARK: Form
 
   func testSimpleForm() {
@@ -424,9 +458,9 @@ class VaporFormsTests: XCTestCase {
       let _ = try SimpleForm(validating: content)
     } catch { XCTFail(String(describing: error)) }
   }
-  
+
   // MARK: Leaf tags
-  
+
   func testTagErrorsForField() {
     let stem = Stem(workingDirectory: "")
     stem.register(ErrorsForField())
@@ -437,7 +471,7 @@ class VaporFormsTests: XCTestCase {
     let rendered = try! stem.render(leaf, with: context).string
     XCTAssertEqual(rendered, "Fail\n")
   }
-  
+
   func testTagIfFieldHasErrors() {
     let stem = Stem(workingDirectory: "")
     stem.register(IfFieldHasErrors())
@@ -456,7 +490,7 @@ class VaporFormsTests: XCTestCase {
       XCTAssertEqual(rendered, "")
     }
   }
-  
+
   func testTagLoopErrorsForField() {
     let stem = Stem(workingDirectory: "")
     stem.register(LoopErrorsForField())
@@ -468,7 +502,7 @@ class VaporFormsTests: XCTestCase {
     let rendered = try! stem.render(leaf, with: context).string
     XCTAssertEqual(rendered, "Fail1\nFail2\n")
   }
-  
+
   func testTagValueForField() {
     let stem = Stem(workingDirectory: "")
     stem.register(ValueForField())
@@ -479,7 +513,7 @@ class VaporFormsTests: XCTestCase {
     let rendered = try! stem.render(leaf, with: context).string
     XCTAssertEqual(rendered, "FieldValue!")
   }
-  
+
   func testTagLabelForField() {
     let stem = Stem(workingDirectory: "")
     stem.register(LabelForField())
@@ -489,9 +523,9 @@ class VaporFormsTests: XCTestCase {
     let rendered = try! stem.render(leaf, with: context).string
     XCTAssertEqual(rendered, "NameLabel!")
   }
-  
+
   // MARK: Whole thing
-  
+
   func testWholeFieldsetUsage() {
     // Test the usability of a Fieldset.
     // I want to define a fieldset which can be used to render a view.
@@ -553,7 +587,7 @@ class VaporFormsTests: XCTestCase {
       // I would now do something useful with this validated data.
     }
   }
-  
+
   func testWholeFormUsage() {
     // Test the usability of a Form.
     struct SimpleForm: Form {
@@ -615,6 +649,55 @@ class VaporFormsTests: XCTestCase {
       XCTAssertEqual(form.age, 33)
       XCTAssertEqual(form.email, "peter@neverland.net")
       // I would now do something useful with this validated data.
+    } catch { XCTFail() }
+  }
+
+  func testSampleLoginForm() {
+    // Test a simple login form which validates against a credential store.
+    struct LoginForm: Form {
+      let username: String
+      let password: String
+      static let fieldset = Fieldset([
+        "username": StringField(label: "Username"),
+        "password": StringField(label: "Password"),
+      ], requiring: ["username", "password"]) { fieldset in
+        let credentialStore = [
+          (username: "user1", password: "pass1"),
+          (username: "user2", password: "pass2"),
+          (username: "user3", password: "pass3"),
+        ]
+        if (credentialStore.filter {
+          $0.username == fieldset.values["username"]!.string! && $0.password == fieldset.values["password"]!.string!
+        }.isEmpty) {
+          fieldset.errors["password"].append(FieldError.validationFailed(message: "Invalid password"))
+        }
+      }
+      internal init(validatedData: [String: Node]) throws {
+        username = validatedData["username"]!.string!
+        password = validatedData["password"]!.string!
+      }
+    }
+    // Try and log in incorrectly
+    do {
+      let postData = Content()
+      postData.append(Node([
+        "username": "user1",
+        "password": "notmypassword",
+      ]))
+      let _ = try LoginForm(validating: postData)
+      XCTFail()
+    } catch FormError.validationFailed(let fieldset) {
+      XCTAssertEqual(fieldset.errors["password"][0].localizedDescription, "Invalid password")
+    } catch { XCTFail() }
+    // Try and log in correctly
+    do {
+      let postData = Content()
+      postData.append(Node([
+        "username": "user1",
+        "password": "pass1",
+      ]))
+      let form = try LoginForm(validating: postData)
+      XCTAssertEqual(form.username, "user1")
     } catch { XCTFail() }
   }
 

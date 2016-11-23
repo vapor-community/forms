@@ -53,6 +53,20 @@ let fieldset = Fieldset([
 ], requiring: ["email"])
 ```
 
+And even add whole-fieldset validation after individual field validators have run:
+
+```swift
+static let loginFieldset = Fieldset([
+  "username": StringField(label: "Username"),
+  "password": StringField(label: "Password"),
+], requiring: ["username", "password"]) { fieldset in
+  let loginResult = validateCredentials(username: fieldset.values["username"]!.string!, password: fieldset.values["password"]!.string!)
+  if !loginResult {
+    fieldset.errors["password"].append(FieldError.validationFailed(message: "Username and password not valid"))
+  }
+}
+```
+
 Validate from a `request`:
 
 ```swift
