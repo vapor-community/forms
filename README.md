@@ -151,6 +151,17 @@ Rendering a form with validation error messages:
 #ifFieldHasErrors(fieldset, "name") { </ul> }
 ```
 
+Rendering a `select`:
+
+```html
+<select name='colour'>
+  <option hidden></option>
+  <option #valueForField(fieldset, "colour") { #equal(self, "red") { selected } }>red</option>
+  <option #valueForField(fieldset, "colour") { #equal(self, "blue") { selected } }>blue</option>
+  <option #valueForField(fieldset, "colour") { #equal(self, "green") { selected } }>green</option>
+</select>
+```
+
 ## Documentation
 
 See the extensive tests file for full usage while in early development.
