@@ -117,9 +117,9 @@ struct UserForm: Form {
   
   init(validatedData: [String: Node]) throws {
     // validatedData is guaranteed to contain correct field names and values.
-    firstName = validated["firstName"]!.string!
-    lastName = validated["lastName"]!.string!
-    email = validated["email"]!.string!
+    firstName = validatedData["firstName"]!.string!
+    lastName = validatedData["lastName"]!.string!
+    email = validatedData["email"]!.string!
   }
 }
 ```
