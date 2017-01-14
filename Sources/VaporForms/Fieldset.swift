@@ -56,11 +56,13 @@ public struct Fieldset {
     fields.forEach { fieldName, fieldDefinition in
       // For each field, see if there's a matching value in the Content
       // Fail if no matching value for a required field
-        var value: Node
+        let value: Node
         if let nodeValue = content[fieldName] as? Node {
             value = nodeValue
-        } else if let multipart = content[fieldName] as? Multipart,
-            case let .input(string) = multipart {
+        } else if
+            let multipart = content[fieldName] as? Multipart,
+            case let .input(string) = multipart
+        {
             value = Node(string)
         } else {
             if requiredFieldNames.contains(fieldName) {
@@ -68,7 +70,6 @@ public struct Fieldset {
             }
             return
         }
-        
         
       // Store the passed-in value to be returned later
       values[fieldName] = value
