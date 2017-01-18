@@ -62,15 +62,15 @@ public struct Fieldset {
       } else if
         let multipart = content[fieldName] as? Multipart,
         case let .input(string) = multipart
-        {
-          value = Node(string)
-        } else {
-          if requiredFieldNames.contains(fieldName) {
-            errors[fieldName].append(.requiredMissing)
+      {
+        value = Node(string)
+      } else {
+        if requiredFieldNames.contains(fieldName) {
+          errors[fieldName].append(.requiredMissing)
         }
-          return
+        return
       }
-        
+      
       // Store the passed-in value to be returned later
       values[fieldName] = value
       // Now try to validate it against the field
