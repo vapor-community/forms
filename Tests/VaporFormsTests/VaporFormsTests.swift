@@ -1,6 +1,6 @@
 import XCTest
 @testable import VaporForms
-import Vapor
+@testable import Vapor
 import Leaf
 
 /**
@@ -65,6 +65,7 @@ class VaporFormsTests: XCTestCase {
       ("testWholeFieldsetUsage", testWholeFieldsetUsage),
       ("testWholeFormUsage", testWholeFormUsage),
       ("testSampleLoginForm", testSampleLoginForm),
+      ("testSampleLoginFormWithMultipart", testSampleLoginFormWithMultipart),
     ]
   }
 
@@ -700,5 +701,89 @@ class VaporFormsTests: XCTestCase {
       XCTAssertEqual(form.username, "user1")
     } catch { XCTFail() }
   }
-
+    
+  func testSampleLoginFormWithMultipart() {
+    // Test a simple login form which validates against a credential store.
+    struct LoginForm: Form {
+      let username: String
+      let password: String
+      static let fieldset = Fieldset([
+        "username": StringField(label: "Username"),
+        "password": StringField(label: "Password"),
+      ], requiring: ["username", "password"]) { fieldset in
+        let credentialStore = [
+          (username: "user1", password: "pass1"),
+          (username: "user2", password: "pass2"),
+          (username: "user3", password: "pass3"),
+        ]
+        if (credentialStore.filter {
+          $0.username == fieldset.values["username"]!.string! && $0.password == fieldset.values["password"]!.string!
+        }.isEmpty) {
+          fieldset.errors["password"].append(FieldError.validationFailed(message: "Invalid password"))
+        }
+      }
+      internal init(validatedData: [String: Node]) throws {
+        username = validatedData["username"]!.string!
+        password = validatedData["password"]!.string!
+      }
+    }
+    // Try and log in incorrectly
+    do {
+      let boundary = "~~vapor-forms~~"
+      var body = "--" + boundary + "\r\n"
+      body += "Content-Disposition: form-data; name=\"username\"\r\n"
+      body += "\r\n"
+      body += "user1\r\n"
+      body += "--" + boundary + "\r\n"
+      body += "Content-Disposition: form-data; name=\"password\"\r\n"
+      body += "\r\n"
+      body += "notmypassword\r\n"
+      body += "--" + boundary + "\r\n"
+      let parsedBoundary = try Multipart.parseBoundary(contentType: "multipart/form-data; charset=utf-8; boundary=\(boundary)")
+      let multipart = Multipart.parse(body.bytes, boundary: parsedBoundary)
+      let postData = Content()
+      postData.append { (indexes: [PathIndex]) -> Polymorphic? in
+        guard let first = indexes.first else { return nil }
+        if let string = first as? String {
+          return multipart[string]
+        } else if let int = first as? Int {
+          return multipart["\(int)"]
+        } else {
+          return nil
+        }
+      }
+      let _ = try LoginForm(validating: postData)
+      XCTFail()
+    } catch FormError.validationFailed(let fieldset) {
+      XCTAssertEqual(fieldset.errors["password"][0].localizedDescription, "Invalid password")
+    } catch { XCTFail() }
+    // Try and log in correctly
+    do {
+      let boundary = "~~vapor-forms~~"
+      var body = "--" + boundary + "\r\n"
+      body += "Content-Disposition: form-data; name=\"username\"\r\n"
+      body += "\r\n"
+      body += "user1\r\n"
+      body += "--" + boundary + "\r\n"
+      body += "Content-Disposition: form-data; name=\"password\"\r\n"
+      body += "\r\n"
+      body += "pass1\r\n"
+      body += "--" + boundary + "\r\n"
+      let parsedBoundary = try Multipart.parseBoundary(contentType: "multipart/form-data; charset=utf-8; boundary=\(boundary)")
+      let multipart = Multipart.parse(body.bytes, boundary: parsedBoundary)
+      let postData = Content()
+      postData.append { (indexes: [PathIndex]) -> Polymorphic? in
+        guard let first = indexes.first else { return nil }
+        if let string = first as? String {
+          return multipart[string]
+        } else if let int = first as? Int {
+          return multipart["\(int)"]
+        } else {
+          return nil
+        }
+      }
+      let form = try LoginForm(validating: postData)
+      XCTAssertEqual(form.username, "user1")
+    } catch { XCTFail() }
+  }
 }
