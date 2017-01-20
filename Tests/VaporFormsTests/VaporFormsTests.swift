@@ -411,10 +411,30 @@ class VaporFormsTests: XCTestCase {
       "lastName": StringField(),
       "email": StringField(String.EmailValidator()),
       "age": IntegerField(),
-    ])
+    ], requiring: ["firstName", "lastName", "age"])
     // request.data is a Content object. I need to create a Content object.
     let content = Content()
     content.append(Node([
+      "firstName": "Peter",
+      "lastName": "Pan",
+      "age": 13,
+    ]))
+    XCTAssertEqual(content["firstName"]?.string, "Peter")
+    // Now validate
+    expectSuccess(fieldset.validate(content)) { XCTFail() }
+  }
+
+  func testValidateFromJSON() {
+    // I want to simulate receiving a Request in POST and binding to it.
+    var fieldset = Fieldset([
+      "firstName": StringField(),
+      "lastName": StringField(),
+      "email": StringField(String.EmailValidator()),
+      "age": IntegerField()
+    ], requiring: ["firstName", "lastName", "age"])
+    // request.data is a Content object. I need to create a Content object.
+    let content = Content()
+    content.append(JSON([
       "firstName": "Peter",
       "lastName": "Pan",
       "age": 13,
