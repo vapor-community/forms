@@ -59,6 +59,8 @@ public struct Fieldset {
       let value: Node
       if let nodeValue = content[fieldName] as? Node {
         value = nodeValue
+      } else if let nodeValue = content[fieldName] as? JSON {
+        value = nodeValue.node
       } else if
         let multipart = content[fieldName] as? Multipart,
         case let .input(string) = multipart
