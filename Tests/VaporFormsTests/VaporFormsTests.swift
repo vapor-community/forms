@@ -2,6 +2,7 @@ import XCTest
 @testable import VaporForms
 @testable import Vapor
 import Leaf
+import Fluent
 
 /**
  Layout of the vapor-forms library
@@ -45,6 +46,7 @@ class VaporFormsTests: XCTestCase {
       ("testFieldUnsignedIntegerValidation", testFieldUnsignedIntegerValidation),
       ("testFieldDoubleValidation", testFieldDoubleValidation),
       ("testFieldBoolValidation", testFieldBoolValidation),
+      ("testUniqueFieldValidation", testUniqueFieldValidation),
       // Fieldset
       ("testSimpleFieldset", testSimpleFieldset),
       ("testSimpleFieldsetGetInvalidData", testSimpleFieldsetGetInvalidData),
@@ -67,6 +69,10 @@ class VaporFormsTests: XCTestCase {
       ("testSampleLoginForm", testSampleLoginForm),
       ("testSampleLoginFormWithMultipart", testSampleLoginFormWithMultipart),
     ]
+  }
+  
+  override func setUp(){
+    Database.default = Database(TestDriver())
   }
 
   func expectMatch(_ test: FieldValidationResult, _ match: Node, fail: () -> Void) {
@@ -144,6 +150,10 @@ class VaporFormsTests: XCTestCase {
     expectFailure(StringField(String.MaximumLengthValidator(characters: 6)).validate("maxi string")) { XCTFail() }
     // Value not exact size should fail
     expectFailure(StringField(String.ExactLengthValidator(characters: 6)).validate("wrong size")) { XCTFail() }
+    // Value in regex should succeed
+    expectSuccess(StringField(String.RegexValidator(regex: "^[a-z]{6}$")).validate("string")) { XCTFail() }
+    // Value in regex should failure
+    expectFailure(StringField(String.RegexValidator(regex: "^[a-z]{6}$")).validate("string 1s wr0ng")) { XCTFail() }
   }
 
   func testFieldEmailValidation() {
@@ -234,7 +244,14 @@ class VaporFormsTests: XCTestCase {
     expectMatch(BoolField().validate("f"), Node(false)) { XCTFail() }
     expectMatch(BoolField().validate(0), Node(false)) { XCTFail() }
   }
-
+  
+  func testUniqueFieldValidation() {
+    // Expect success because this count should return 0
+    expectSuccess(StringField(UniqueFieldValidator<TestUser>(column: "name")).validate("filter_applied")) { XCTFail() }
+    // Expect failure because this count should return 1
+    expectFailure(StringField(UniqueFieldValidator<TestUser>(column: "name")).validate("not_unique")) { XCTFail() }
+  }
+  
   // MARK: Fieldset
 
   func testSimpleFieldset() {
@@ -806,4 +823,54 @@ class VaporFormsTests: XCTestCase {
       XCTAssertEqual(form.username, "user1")
     } catch { XCTFail() }
   }
+}
+
+// MARK: Mocks
+
+// Mock Driver to test DB validators
+class TestDriver: Driver {
+  var idKey: String = "id"
+  func query<T : Entity>(_ query: Query<T>) throws -> Node {
+    switch query.action {
+    case .count:
+      // If we have this specific filter consider it's not unique
+      guard query.filters.contains(where: {
+        guard case .compare(let key, let comparison, let value) = $0.method else {
+          return false
+        }
+        return (key == "name" && comparison == .equals && value == Node("not_unique"))
+      }) else {
+        return 0
+      }
+      return 1
+    default:
+      return 0
+    }
+  }
+  func schema(_ schema: Schema) throws {}
+  @discardableResult
+  public func raw(_ query: String, _ values: [Node] = []) throws -> Node {
+    return .null
+  }
+}
+
+// Mock Entity to test DB validators
+struct TestUser: Entity {
+  var id: Node?
+  var name: String
+  init(name: String) {
+    self.name = name
+  }
+  init(node: Node, in context: Vapor.Context) throws {
+    id = try node.extract("id")
+    name = try node.extract("name")
+  }
+  func makeNode(context: Vapor.Context) throws -> Node {
+    return try Node(node: [
+      "id": id,
+      "name": name
+      ])
+  }
+  static func prepare(_ database: Database) throws {}
+  static func revert(_ database: Database) throws {}
 }
