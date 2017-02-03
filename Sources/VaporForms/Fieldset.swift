@@ -1,6 +1,7 @@
 import Vapor
 import Node
 import Polymorphic
+import FormData
 
 /**
   A struct which contains a list of fields, each with their validators attached,
@@ -61,6 +62,15 @@ public struct Fieldset {
         value = nodeValue
       } else if let nodeValue = content[fieldName] as? JSON {
         value = nodeValue.node
+      } else if let field = content[fieldName] as? Field {
+        do {
+          value = Node(try String(bytes: field.part.body))
+        } catch {
+          if requiredFieldNames.contains(fieldName) {
+            errors[fieldName].append(.requiredMissing)
+          }
+          return
+        }
       } else if
         let multipart = content[fieldName] as? Multipart,
         case let .input(string) = multipart
