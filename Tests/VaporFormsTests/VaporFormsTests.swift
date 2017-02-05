@@ -869,7 +869,7 @@ struct TestUser: Entity {
     return try Node(node: [
       "id": id,
       "name": name
-      ])
+    ])
   }
   static func prepare(_ database: Database) throws {}
   static func revert(_ database: Database) throws {}
