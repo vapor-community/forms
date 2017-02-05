@@ -63,23 +63,17 @@ public struct Fieldset {
       } else if let nodeValue = content[fieldName] as? JSON {
         value = nodeValue.node
       } else if let field = content[fieldName] as? Field {
+        // Try to convert the Field body from bytes to a String
+        let fieldString: String
         do {
-          value = Node(try String(bytes: field.part.body))
+          fieldString = try String(bytes: field.part.body)
         } catch {
-          if requiredFieldNames.contains(fieldName) {
-            errors[fieldName].append(.requiredMissing)
-          }
+          checkIfFieldIsRequired(fieldName)
           return
         }
-      } else if
-        let multipart = content[fieldName] as? Multipart,
-        case let .input(string) = multipart
-      {
-        value = Node(string)
+        value = Node(fieldString)
       } else {
-        if requiredFieldNames.contains(fieldName) {
-          errors[fieldName].append(.requiredMissing)
-        }
+        checkIfFieldIsRequired(fieldName)
         return
       }
       
@@ -110,6 +104,11 @@ public struct Fieldset {
     return validate(content)
   }
 
+  private mutating func checkIfFieldIsRequired(_ fieldName: String){
+    if requiredFieldNames.contains(fieldName) {
+      errors[fieldName].append(.requiredMissing)
+    }
+  }
 }
 
 extension Fieldset: NodeRepresentable {

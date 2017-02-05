@@ -769,22 +769,17 @@ class VaporFormsTests: XCTestCase {
     }
     // Try and log in incorrectly
     do {
-      
       let user = "user1"
       let userPart = Part(headers: [:], body: user.bytes)
       let userField = Field(name: "username", filename: nil, part: userPart)
-      
       let password = "notmypassword"
       let passwordPart = Part(headers: [:], body: password.bytes)
       let passwordField = Field(name: "password", filename: nil, part: passwordPart)
-    
       let request = try Request(method: .get, uri: "form-data")
-      
       request.formData = [
         "username": userField,
         "password": passwordField
       ]
-      
       let _ = try LoginForm(validating: request.data)
       XCTFail()
     } catch FormError.validationFailed(let fieldset) {
@@ -792,22 +787,17 @@ class VaporFormsTests: XCTestCase {
     } catch { XCTFail() }
     // Try and log in correctly
     do {
-      
       let user = "user1"
       let userPart = Part(headers: [:], body: user.bytes)
       let userField = Field(name: "username", filename: nil, part: userPart)
-      
       let password = "pass1"
       let passwordPart = Part(headers: [:], body: password.bytes)
       let passwordField = Field(name: "password", filename: nil, part: passwordPart)
-      
       let request = try Request(method: .get, uri: "form-data")
-      
       request.formData = [
         "username": userField,
         "password": passwordField
       ]
-      
       let form = try LoginForm(validating: request.data)
       XCTAssertEqual(form.username, "user1")
     } catch { XCTFail() }
