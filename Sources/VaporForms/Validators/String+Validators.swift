@@ -93,7 +93,7 @@ extension String {
           return .success(Node(value))
         }
       }
-      return .failure([.validationFailed(message: message ?? "String did not match regular expression.")])
+      return .failure([.validationFailed(message: message ?? "Value did not match required format.")])
     }
   }
 }

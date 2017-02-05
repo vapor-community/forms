@@ -26,12 +26,12 @@ public class UniqueFieldValidator<ModelType: Entity>: FieldValidator<String> {
       }
       // Check if any record exists
       if(try query.count() > 0){
-        return .failure([.validationFailed(message: message ?? "\(self.column) is not unique")])
+        return .failure([.validationFailed(message: message ?? "Value \(self.column) must be unique.")])
       }
       // If not we have green light
       return .success(Node(value))
     } catch {
-      return .failure([.validationFailed(message: message ?? "\(self.column) is not unique")])
+      return .failure([.validationFailed(message: message ?? "Value \(self.column) must be unique.")])
     }
   }
 }
