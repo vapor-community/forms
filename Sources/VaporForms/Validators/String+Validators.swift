@@ -77,4 +77,23 @@ extension String {
     }
   }
 
+  /**
+   Validates a string against the given regex
+   */
+  public class RegexValidator: FieldValidator<String> {
+    let regex: String?
+    let message: String?
+    public init(regex: String?=nil, message: String?=nil) {
+      self.regex = regex
+      self.message = message
+    }
+    override public func validate(input value: String) -> FieldValidationResult {
+      if let regex = self.regex {
+        if let _ = value.range(of: regex, options: .regularExpression) {
+          return .success(Node(value))
+        }
+      }
+      return .failure([.validationFailed(message: message ?? "Value did not match required format.")])
+    }
+  }
 }
