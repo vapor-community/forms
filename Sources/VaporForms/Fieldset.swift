@@ -68,12 +68,12 @@ public struct Fieldset {
         do {
           fieldString = try String(bytes: field.part.body)
         } catch {
-          checkIfFieldIsRequired(fieldName)
+          performRequiredFieldCheck(for: fieldName)
           return
         }
         value = Node(fieldString)
       } else {
-        checkIfFieldIsRequired(fieldName)
+        performRequiredFieldCheck(for: fieldName)
         return
       }
       
@@ -104,7 +104,7 @@ public struct Fieldset {
     return validate(content)
   }
 
-  private mutating func checkIfFieldIsRequired(_ fieldName: String){
+  private mutating func performRequiredFieldCheck(for fieldName: String) {
     if requiredFieldNames.contains(fieldName) {
       errors[fieldName].append(.requiredMissing)
     }
