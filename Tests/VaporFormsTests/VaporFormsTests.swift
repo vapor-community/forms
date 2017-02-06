@@ -3,6 +3,9 @@ import XCTest
 @testable import Vapor
 import Leaf
 import Fluent
+import FormData
+import Multipart
+import HTTP
 
 /**
  Layout of the vapor-forms library
@@ -766,60 +769,36 @@ class VaporFormsTests: XCTestCase {
     }
     // Try and log in incorrectly
     do {
-      let boundary = "~~vapor-forms~~"
-      var body = "--" + boundary + "\r\n"
-      body += "Content-Disposition: form-data; name=\"username\"\r\n"
-      body += "\r\n"
-      body += "user1\r\n"
-      body += "--" + boundary + "\r\n"
-      body += "Content-Disposition: form-data; name=\"password\"\r\n"
-      body += "\r\n"
-      body += "notmypassword\r\n"
-      body += "--" + boundary + "\r\n"
-      let parsedBoundary = try Multipart.parseBoundary(contentType: "multipart/form-data; charset=utf-8; boundary=\(boundary)")
-      let multipart = Multipart.parse(body.bytes, boundary: parsedBoundary)
-      let postData = Content()
-      postData.append { (indexes: [PathIndex]) -> Polymorphic? in
-        guard let first = indexes.first else { return nil }
-        if let string = first as? String {
-          return multipart[string]
-        } else if let int = first as? Int {
-          return multipart["\(int)"]
-        } else {
-          return nil
-        }
-      }
-      let _ = try LoginForm(validating: postData)
+      let user = "user1"
+      let userPart = Part(headers: [:], body: user.bytes)
+      let userField = Field(name: "username", filename: nil, part: userPart)
+      let password = "notmypassword"
+      let passwordPart = Part(headers: [:], body: password.bytes)
+      let passwordField = Field(name: "password", filename: nil, part: passwordPart)
+      let request = try Request(method: .get, uri: "form-data")
+      request.formData = [
+        "username": userField,
+        "password": passwordField
+      ]
+      let _ = try LoginForm(validating: request.data)
       XCTFail()
     } catch FormError.validationFailed(let fieldset) {
       XCTAssertEqual(fieldset.errors["password"][0].localizedDescription, "Invalid password")
     } catch { XCTFail() }
     // Try and log in correctly
     do {
-      let boundary = "~~vapor-forms~~"
-      var body = "--" + boundary + "\r\n"
-      body += "Content-Disposition: form-data; name=\"username\"\r\n"
-      body += "\r\n"
-      body += "user1\r\n"
-      body += "--" + boundary + "\r\n"
-      body += "Content-Disposition: form-data; name=\"password\"\r\n"
-      body += "\r\n"
-      body += "pass1\r\n"
-      body += "--" + boundary + "\r\n"
-      let parsedBoundary = try Multipart.parseBoundary(contentType: "multipart/form-data; charset=utf-8; boundary=\(boundary)")
-      let multipart = Multipart.parse(body.bytes, boundary: parsedBoundary)
-      let postData = Content()
-      postData.append { (indexes: [PathIndex]) -> Polymorphic? in
-        guard let first = indexes.first else { return nil }
-        if let string = first as? String {
-          return multipart[string]
-        } else if let int = first as? Int {
-          return multipart["\(int)"]
-        } else {
-          return nil
-        }
-      }
-      let form = try LoginForm(validating: postData)
+      let user = "user1"
+      let userPart = Part(headers: [:], body: user.bytes)
+      let userField = Field(name: "username", filename: nil, part: userPart)
+      let password = "pass1"
+      let passwordPart = Part(headers: [:], body: password.bytes)
+      let passwordField = Field(name: "password", filename: nil, part: passwordPart)
+      let request = try Request(method: .get, uri: "form-data")
+      request.formData = [
+        "username": userField,
+        "password": passwordField
+      ]
+      let form = try LoginForm(validating: request.data)
       XCTAssertEqual(form.username, "user1")
     } catch { XCTFail() }
   }
