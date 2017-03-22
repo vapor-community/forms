@@ -1,6 +1,5 @@
 import Vapor
 import Node
-import Polymorphic
 import FormData
 
 /**
@@ -58,21 +57,21 @@ public struct Fieldset {
       // For each field, see if there's a matching value in the Content
       // Fail if no matching value for a required field
       let value: Node
-      if let nodeValue = content[fieldName] as? Node {
+      if let nodeValue = content[fieldName] {
         value = nodeValue
-      } else if let nodeValue = content[fieldName] as? JSON {
-        value = nodeValue.node
-      } else if let field = content[fieldName] as? Field {
-        // Try to convert the Field body from bytes to a String
-        let fieldString: String
-        do {
-          fieldString = try String(bytes: field.part.body)
-        } catch {
-          performRequiredFieldCheck(for: fieldName)
-          return
-        }
-        value = Node(fieldString)
-      } else {
+      }
+//      else if let field = content[fieldName] as? Field {
+//        // Try to convert the Field body from bytes to a String
+//        let fieldString: String
+//        do {
+//          fieldString = try String(bytes: field.part.body)
+//        } catch {
+//          performRequiredFieldCheck(for: fieldName)
+//          return
+//        }
+//        value = Node(fieldString)
+//      }
+      else {
         performRequiredFieldCheck(for: fieldName)
         return
       }
@@ -112,7 +111,7 @@ public struct Fieldset {
 }
 
 extension Fieldset: NodeRepresentable {
-  public func makeNode(context: Context) throws -> Node {
+  public func makeNode(in context: Context?) throws -> Node {
     /*
     [
       "name": [
