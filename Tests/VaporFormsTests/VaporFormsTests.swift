@@ -508,9 +508,9 @@ class VaporFormsTests: XCTestCase {
     let leaf = try! stem.spawnLeaf(raw: "#errorsForField(fieldset, \"fieldName\") { #loop(self, \"message\") { #(message) } }")
     var fieldset = Fieldset(["fieldName": StringField()])
     fieldset.errors["fieldName"].append(FieldError.validationFailed(message: "Fail"))
-    let context = Context(["fieldset": try! fieldset.makeNode()])
-    let rendered = try! stem.render(leaf, with: context).string
-    XCTAssertEqual(rendered, "Fail\n")
+    let context = Context(["fieldset": try! fieldset.makeNode(in: nil)])
+    let rendered = try! stem.render(leaf, with: context).makeString()
+    XCTAssertEqual(rendered, "Fail")
   }
 
   func testTagIfFieldHasErrors() {
@@ -520,14 +520,14 @@ class VaporFormsTests: XCTestCase {
     do {
       var fieldset = Fieldset(["fieldName": StringField()])
       fieldset.errors["fieldName"].append(FieldError.requiredMissing)
-      let context = Context(["fieldset": try! fieldset.makeNode()])
-      let rendered = try! stem.render(leaf, with: context).string
+        let context = Context(["fieldset": try! fieldset.makeNode(in: nil)])
+      let rendered = try! stem.render(leaf, with: context).makeString()
       XCTAssertEqual(rendered, "HasErrors")
     }
     do {
       let fieldset = Fieldset(["fieldName": StringField()])
-      let context = Context(["fieldset": try! fieldset.makeNode()])
-      let rendered = try! stem.render(leaf, with: context).string
+        let context = Context(["fieldset": try! fieldset.makeNode(in: nil)])
+      let rendered = try! stem.render(leaf, with: context).makeString()
       XCTAssertEqual(rendered, "")
     }
   }
@@ -539,8 +539,8 @@ class VaporFormsTests: XCTestCase {
     var fieldset = Fieldset(["fieldName": StringField()])
     fieldset.errors["fieldName"].append(FieldError.validationFailed(message: "Fail1"))
     fieldset.errors["fieldName"].append(FieldError.validationFailed(message: "Fail2"))
-    let context = Context(["fieldset": try! fieldset.makeNode()])
-    let rendered = try! stem.render(leaf, with: context).string
+    let context = Context(["fieldset": try! fieldset.makeNode(in: nil)])
+    let rendered = try! stem.render(leaf, with: context).makeString()
     XCTAssertEqual(rendered, "Fail1\nFail2\n")
   }
 
@@ -550,8 +550,8 @@ class VaporFormsTests: XCTestCase {
     let leaf = try! stem.spawnLeaf(raw: "#valueForField(fieldset, \"fieldName\")!")
     var fieldset = Fieldset(["fieldName": StringField()])
     fieldset.values = ["fieldName": "FieldValue"]
-    let context = Context(["fieldset": try! fieldset.makeNode()])
-    let rendered = try! stem.render(leaf, with: context).string
+    let context = Context(["fieldset": try! fieldset.makeNode(in: nil)])
+    let rendered = try! stem.render(leaf, with: context).makeString()
     XCTAssertEqual(rendered, "FieldValue!")
   }
 
@@ -560,8 +560,8 @@ class VaporFormsTests: XCTestCase {
     stem.register(LabelForField())
     let leaf = try! stem.spawnLeaf(raw: "#labelForField(fieldset, \"fieldName\")!")
     let fieldset = Fieldset(["fieldName": StringField(label: "NameLabel")])
-    let context = Context(["fieldset": try! fieldset.makeNode()])
-    let rendered = try! stem.render(leaf, with: context).string
+    let context = Context(["fieldset": try! fieldset.makeNode(in: nil)])
+    let rendered = try! stem.render(leaf, with: context).makeString()
     XCTAssertEqual(rendered, "NameLabel!")
   }
 
@@ -587,7 +587,7 @@ class VaporFormsTests: XCTestCase {
     // That means I need to be able to convert it to a Node.
     // The node should be able to tell me the `label` for each field.
     do {
-      let fieldsetNode = try! fieldset.makeNode()
+        let fieldsetNode = try! fieldset.makeNode(in: nil)
       XCTAssertEqual(fieldsetNode["name"]?["label"]?.string, "Your name")
       XCTAssertEqual(fieldsetNode["age"]?["label"]?.string, "Your age")
       XCTAssertEqual(fieldsetNode["email"]?["label"]?.string, "Email address")
@@ -605,7 +605,7 @@ class VaporFormsTests: XCTestCase {
       expectFailure(validationResult) { XCTFail() }
       // Now I should be able to render the fieldset into a view
       // with the passed-in data and also any errors.
-      let fieldsetNode = try! fieldset.makeNode()
+      let fieldsetNode = try! fieldset.makeNode(in: nil)
       XCTAssertEqual(fieldsetNode["name"]?["label"]?.string, "Your name")
       XCTAssertEqual(fieldsetNode["name"]?["value"]?.string, "Peter Pan")
       XCTAssertNil(fieldsetNode["name"]?["errors"])
@@ -656,7 +656,7 @@ class VaporFormsTests: XCTestCase {
     // I have defined a form with a fieldset with labels. Test
     // that I can properly render it.
     do {
-      let fieldsetNode = try! SimpleForm.fieldset.makeNode()
+      let fieldsetNode = try! SimpleForm.fieldset.makeNode(in: nil)
       XCTAssertEqual(fieldsetNode["name"]?["label"]?.string, "Your name")
       XCTAssertEqual(fieldsetNode["age"]?["label"]?.string, "Your age")
       XCTAssertEqual(fieldsetNode["email"]?["label"]?.string, "Email address")
@@ -673,7 +673,7 @@ class VaporFormsTests: XCTestCase {
     } catch FormError.validationFailed(let fieldset) {
       // Now I should be able to render the fieldset into a view
       // with the passed-in data and also any errors.
-      let fieldsetNode = try! fieldset.makeNode()
+      let fieldsetNode = try! fieldset.makeNode(in: nil)
       XCTAssertEqual(fieldsetNode["name"]?["label"]?.string, "Your name")
       XCTAssertEqual(fieldsetNode["name"]?["value"]?.string, "Peter Pan")
       XCTAssertNil(fieldsetNode["name"]?["errors"])
@@ -770,10 +770,10 @@ class VaporFormsTests: XCTestCase {
     // Try and log in incorrectly
     do {
       let user = "user1"
-      let userPart = Part(headers: [:], body: user.bytes)
+      let userPart = Part(headers: [:], body: user.makeBytes())
       let userField = Field(name: "username", filename: nil, part: userPart)
       let password = "notmypassword"
-      let passwordPart = Part(headers: [:], body: password.bytes)
+      let passwordPart = Part(headers: [:], body: password.makeBytes())
       let passwordField = Field(name: "password", filename: nil, part: passwordPart)
       let request = try Request(method: .get, uri: "form-data")
       request.formData = [
@@ -788,10 +788,10 @@ class VaporFormsTests: XCTestCase {
     // Try and log in correctly
     do {
       let user = "user1"
-      let userPart = Part(headers: [:], body: user.bytes)
+      let userPart = Part(headers: [:], body: user.makeBytes())
       let userField = Field(name: "username", filename: nil, part: userPart)
       let password = "pass1"
-      let passwordPart = Part(headers: [:], body: password.bytes)
+      let passwordPart = Part(headers: [:], body: password.makeBytes())
       let passwordField = Field(name: "password", filename: nil, part: passwordPart)
       let request = try Request(method: .get, uri: "form-data")
       request.formData = [
@@ -807,49 +807,65 @@ class VaporFormsTests: XCTestCase {
 // MARK: Mocks
 
 // Mock Driver to test DB validators
-class TestDriver: Driver {
-  var idKey: String = "id"
-  func query<T : Entity>(_ query: Query<T>) throws -> Node {
-    switch query.action {
-    case .count:
-      // If we have this specific filter consider it's not unique
-      guard query.filters.contains(where: {
-        guard case .compare(let key, let comparison, let value) = $0.method else {
-          return false
+class TestDriver: Driver, Connection {
+    var idKey: String = "id"
+    var idType: IdentifierType = .int
+    var keyNamingConvention: KeyNamingConvention = .snake_case
+    var closed: Bool { return false }
+
+    func query<T : Entity>(_ query: Query<T>) throws -> Node {
+        switch query.action {
+        case .count:
+            // If we have this specific filter consider it's not unique
+            guard query.filters.contains(where: {
+                guard case .compare(let key, let comparison, let value) = $0.method else {
+                    return false
+                }
+                return (key == "name" && comparison == .equals && value == Node("not_unique"))
+            }) else {
+                return 0
+            }
+            return 1
+        default:
+            return 0
         }
-        return (key == "name" && comparison == .equals && value == Node("not_unique"))
-      }) else {
-        return 0
-      }
-      return 1
-    default:
-      return 0
     }
-  }
-  func schema(_ schema: Schema) throws {}
-  @discardableResult
-  public func raw(_ query: String, _ values: [Node] = []) throws -> Node {
-    return .null
-  }
+    func schema(_ schema: Schema) throws {}
+    @discardableResult
+    public func raw(_ query: String, _ values: [Node] = []) throws -> Node {
+        return .null
+    }
+
+    func makeConnection() throws -> Connection {
+        return self
+    }
 }
 
 // Mock Entity to test DB validators
-struct TestUser: Entity {
-  var id: Node?
-  var name: String
-  init(name: String) {
-    self.name = name
-  }
-  init(node: Node, in context: Vapor.Context) throws {
-    id = try node.extract("id")
-    name = try node.extract("name")
-  }
-  func makeNode(context: Vapor.Context) throws -> Node {
-    return try Node(node: [
-      "id": id,
-      "name": name
-    ])
-  }
-  static func prepare(_ database: Database) throws {}
-  static func revert(_ database: Database) throws {}
+final class TestUser: Entity {
+    let storage = Storage()
+
+    var name: String
+    init(name: String) {
+        self.name = name
+    }
+
+    init(node: Node) throws {
+        name = try node.get("name")
+    }
+
+    convenience init(row: Row) throws {
+        try self.init(node: Node(row))
+    }
+
+    func makeNode(in context: Vapor.Context?) throws -> Node {
+        var node = Node(context)
+        try node.set("name", name)
+        return node
+    }
+    func makeRow() throws -> Row {
+        return try makeNode(in: rowContext).converted()
+    }
+    static func prepare(_ database: Database) throws {}
+    static func revert(_ database: Database) throws {}
 }

@@ -51,7 +51,7 @@ public struct IntegerField: ValidatableField {
     // Retrieving value.int, if value is a Double, will force-convert it to an Int which is
     // not what we want so we have to filter out all Doubles first.
     // This has the unfortunate side-effect of excluding any Doubles which are in fact whole numbers.
-    if case .number(let number) = value, case .double = number {
+    if case .number(let number) = value.wrapped, case .double = number {
       return .failure([.validationFailed(message: "Please enter a whole number.")])
     }
     guard let int = value.int else {
@@ -78,10 +78,10 @@ public struct UnsignedIntegerField: ValidatableField {
   }
   public func validate(_ value: Node) -> FieldValidationResult {
     // Filter out Doubles (see comments in IntegerField) and negative Ints first.
-    if case .number(let number) = value, case .double = number {
+    if case .number(let number) = value.wrapped, case .double = number {
       return .failure([.validationFailed(message: "Please enter a positive whole number.")])
     }
-    if case .number(let number) = value, case .int(let int) = number, int < 0 {
+    if case .number(let number) = value.wrapped, case .int(let int) = number, int < 0 {
       return .failure([.validationFailed(message: "Please enter a positive whole number.")])
     }
     guard let uint = value.uint else {

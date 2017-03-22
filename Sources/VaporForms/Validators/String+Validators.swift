@@ -1,5 +1,6 @@
 import Foundation
 import Vapor
+import Validation
 
 extension String {
 
@@ -69,7 +70,7 @@ extension String {
     }
     override public func validate(input value: String) -> FieldValidationResult {
       do {
-        try Email.validate(input: value)
+        try Validation.EmailValidator().validate(value)
       } catch {
         return .failure([.validationFailed(message: message ?? "Enter a valid email address.")])
       }

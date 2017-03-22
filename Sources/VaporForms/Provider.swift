@@ -1,15 +1,22 @@
 import Vapor
 import Leaf
+import VaporLeaf
 
 public final class Provider: Vapor.Provider {
-  public init(config: Config) throws {}
+  public init(config: Config) {}
 
   public func boot(_ drop: Droplet) {
-    let stem = (drop.view as? LeafRenderer)?.stem
-    let tags: [Tag] = [ErrorsForField(), IfFieldHasErrors(), LabelForField(), LoopErrorsForField(), ValueForField()]
-    tags.forEach {
-      stem?.register($0)
-    }
+    do {
+        let stem = try drop.stem()
+        let tags: [Tag] = [
+            ErrorsForField(),
+            IfFieldHasErrors(),
+            LabelForField(),
+            LoopErrorsForField(),
+            ValueForField()
+        ]
+        tags.forEach(stem.register)
+    } catch {}
   }
 
   public func beforeRun(_ drop: Droplet) {} // Remove when able

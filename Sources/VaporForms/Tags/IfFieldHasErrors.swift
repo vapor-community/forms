@@ -13,9 +13,9 @@ public final class IfFieldHasErrors: Tag {
   public func shouldRender(stem: Stem, context: Context, tagTemplate: TagTemplate, arguments: [Argument], value: Node?) -> Bool {
     guard
       arguments.count == 2,
-      let fieldset = arguments[0].value?.nodeObject,
+      let fieldset = arguments[0].value?.object,
       let fieldName = arguments[1].value?.string,
-      let errors = fieldset[fieldName]?["errors"]?.nodeArray
+      let errors = fieldset[fieldName]?["errors"]?.array
     else { return false }
     return !errors.isEmpty
   }
