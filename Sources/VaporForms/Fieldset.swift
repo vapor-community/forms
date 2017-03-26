@@ -72,6 +72,8 @@ public struct Fieldset {
           return
         }
         value = Node(fieldString)
+      } else if let multipart = content[fieldName]?.string {
+        value = Node(multipart)
       } else {
         performRequiredFieldCheck(for: fieldName)
         return
