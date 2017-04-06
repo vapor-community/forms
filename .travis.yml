@@ -1,0 +1,15 @@
+os:
+  - linux
+language: generic
+sudo: required
+dist: trusty
+script:
+  # Install Swift and dependencies
+  - sudo apt-get install -y clang libicu-dev uuid-dev
+  - wget https://swift.org/builds/swift-3.1-release/ubuntu1404/swift-3.1-RELEASE/swift-3.1-RELEASE-ubuntu14.04.tar.gz
+  - tar zxf swift-3.1-RELEASE-ubuntu14.04.tar.gz
+  - export PATH=$PWD/swift-3.1-RELEASE-ubuntu14.04/usr/bin:"${PATH}"
+  # Build project
+  - swift build -c release
+  # Test project
+  - swift test
