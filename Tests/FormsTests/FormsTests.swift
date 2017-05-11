@@ -1,5 +1,5 @@
 import XCTest
-@testable import VaporForms
+@testable import Forms
 @testable import Vapor
 import Leaf
 import Fluent
@@ -36,8 +36,8 @@ import HTTP
  - provide useful information on each field to help generate HTML forms but not actually generate them
 */
 
-class VaporFormsTests: XCTestCase {
-  static var allTests : [(String, (VaporFormsTests) -> () throws -> Void)] {
+class FormsTests: XCTestCase {
+  static var allTests : [(String, (FormsTests) -> () throws -> Void)] {
     return [
       // ValidationErrors struct
       ("testValidationErrorsDictionaryLiteral", testValidationErrorsDictionaryLiteral),
@@ -73,7 +73,7 @@ class VaporFormsTests: XCTestCase {
       ("testSampleLoginFormWithMultipart", testSampleLoginFormWithMultipart),
     ]
   }
-  
+
   override func setUp(){
     Database.default = Database(TestDriver())
   }
@@ -247,14 +247,14 @@ class VaporFormsTests: XCTestCase {
     expectMatch(BoolField().validate("f"), Node(false)) { XCTFail() }
     expectMatch(BoolField().validate(0), Node(false)) { XCTFail() }
   }
-  
+
   func testUniqueFieldValidation() {
     // Expect success because this count should return 0
     expectSuccess(StringField(UniqueFieldValidator<TestUser>(column: "name")).validate("filter_applied")) { XCTFail() }
     // Expect failure because this count should return 1
     expectFailure(StringField(UniqueFieldValidator<TestUser>(column: "name")).validate("not_unique")) { XCTFail() }
   }
-  
+
   // MARK: Fieldset
 
   func testSimpleFieldset() {
@@ -741,7 +741,7 @@ class VaporFormsTests: XCTestCase {
       XCTAssertEqual(form.username, "user1")
     } catch { XCTFail() }
   }
-    
+
   func testSampleLoginFormWithMultipart() {
     // Test a simple login form which validates against a credential store.
     struct LoginForm: Form {

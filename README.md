@@ -1,4 +1,8 @@
-# VaporForms
+# Forms
+
+![Swift](http://img.shields.io/badge/swift-3.1-brightgreen.svg)
+![Vapor](http://img.shields.io/badge/vapor-1.5-brightgreen.svg)
+![Travis](https://travis-ci.org/vapor-community/forms.svg?branch=master)
 
 Brings simple, dynamic and re-usable web form handling to
 [Vapor](https://github.com/vapor/vapor).
@@ -10,10 +14,10 @@ Don't forget to add to your `providers` if you want to use built-in Leaf tags:
 
 ```swift
 import Vapor
-import VaporForms
+import Forms
 
 let drop = Droplet()
-try drop.addProvider(VaporForms.Provider.self)
+try drop.addProvider(Forms.Provider.self)
 ```
 
 ## Features
@@ -108,13 +112,13 @@ struct UserForm: Form {
   let firstName: String
   let lastName: String
   let email: String
-  
+
   static let fieldset = Fieldset([
     "firstName": StringField(),
     "lastName": StringField(),
     "email": StringField(String.EmailValidator()),
   ], requiring: ["firstName", "lastName", "email"])
-  
+
   init(validatedData: [String: Node]) throws {
     // validatedData is guaranteed to contain correct field names and values.
     firstName = validatedData["firstName"]!.string!

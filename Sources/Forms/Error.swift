@@ -2,7 +2,7 @@ import Node
 
 /**
   Represents an error in the field validation process.
-  While they conform to `Error`, these are never thrown by VaporForms;
+  While they conform to `Error`, these are never thrown by Forms;
   instead, they are returned as part of a `...ValidationResult`.
 
   The `localizedDescription` of these errors is intended to be displayed

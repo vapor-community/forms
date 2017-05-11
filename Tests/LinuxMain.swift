@@ -1,6 +1,6 @@
 import XCTest
-@testable import VaporFormsTests
+@testable import FormsTests
 
 XCTMain([
-  testCase(VaporFormsTests.allTests),
+  testCase(FormsTests.allTests),
 ])
