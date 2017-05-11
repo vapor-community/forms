@@ -4,6 +4,13 @@
 ![Vapor](http://img.shields.io/badge/vapor-1.5-brightgreen.svg)
 ![Travis](https://travis-ci.org/vapor-community/forms.svg?branch=master)
 
+---
+
+**Vapor 2**: this package is *not* compatible with Vapor 2 beta. Once Vapor 2
+moves out of beta, this package will be updated.
+
+---
+
 Brings simple, dynamic and re-usable web form handling to
 [Vapor](https://github.com/vapor/vapor).
 
