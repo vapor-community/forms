@@ -37,6 +37,8 @@ import HTTP
 */
 
 class FormsTests: XCTestCase {
+    private var stem: Stem!
+
   static var allTests : [(String, (FormsTests) -> () throws -> Void)] {
     return [
       // ValidationErrors struct
@@ -75,7 +77,8 @@ class FormsTests: XCTestCase {
   }
 
   override func setUp(){
-    Database.default = Database(TestDriver())
+    stem = Stem(DataFile())
+//    Database.default = Database(TestDriver())
   }
 
   func expectMatch(_ test: FieldValidationResult, _ match: Node, fail: () -> Void) {
@@ -503,7 +506,6 @@ class FormsTests: XCTestCase {
   // MARK: Leaf tags
 
   func testTagErrorsForField() {
-    let stem = Stem(workingDirectory: "")
     stem.register(ErrorsForField())
     let leaf = try! stem.spawnLeaf(raw: "#errorsForField(fieldset, \"fieldName\") { #loop(self, \"message\") { #(message) } }")
     var fieldset = Fieldset(["fieldName": StringField()])
@@ -514,7 +516,6 @@ class FormsTests: XCTestCase {
   }
 
   func testTagIfFieldHasErrors() {
-    let stem = Stem(workingDirectory: "")
     stem.register(IfFieldHasErrors())
     let leaf = try! stem.spawnLeaf(raw: "#ifFieldHasErrors(fieldset, \"fieldName\") { HasErrors }")
     do {
@@ -533,7 +534,6 @@ class FormsTests: XCTestCase {
   }
 
   func testTagLoopErrorsForField() {
-    let stem = Stem(workingDirectory: "")
     stem.register(LoopErrorsForField())
     let leaf = try! stem.spawnLeaf(raw: "#loopErrorsForField(fieldset, \"fieldName\", \"message\") { #(message) }")
     var fieldset = Fieldset(["fieldName": StringField()])
@@ -545,7 +545,6 @@ class FormsTests: XCTestCase {
   }
 
   func testTagValueForField() {
-    let stem = Stem(workingDirectory: "")
     stem.register(ValueForField())
     let leaf = try! stem.spawnLeaf(raw: "#valueForField(fieldset, \"fieldName\")!")
     var fieldset = Fieldset(["fieldName": StringField()])
@@ -556,7 +555,6 @@ class FormsTests: XCTestCase {
   }
 
   func testTagLabelForField() {
-    let stem = Stem(workingDirectory: "")
     stem.register(LabelForField())
     let leaf = try! stem.spawnLeaf(raw: "#labelForField(fieldset, \"fieldName\")!")
     let fieldset = Fieldset(["fieldName": StringField(label: "NameLabel")])
@@ -793,7 +791,7 @@ class FormsTests: XCTestCase {
       let password = "pass1"
       let passwordPart = Part(headers: [:], body: password.makeBytes())
       let passwordField = Field(name: "password", filename: nil, part: passwordPart)
-      let request = try Request(method: .get, uri: "form-data")
+      let request = Request(method: .get, uri: "form-data")
       request.formData = [
         "username": userField,
         "password": passwordField
@@ -805,42 +803,6 @@ class FormsTests: XCTestCase {
 }
 
 // MARK: Mocks
-
-// Mock Driver to test DB validators
-class TestDriver: Driver, Connection {
-    var idKey: String = "id"
-    var idType: IdentifierType = .int
-    var keyNamingConvention: KeyNamingConvention = .snake_case
-    var closed: Bool { return false }
-
-    func query<T : Entity>(_ query: Query<T>) throws -> Node {
-        switch query.action {
-        case .count:
-            // If we have this specific filter consider it's not unique
-            guard query.filters.contains(where: {
-                guard case .compare(let key, let comparison, let value) = $0.method else {
-                    return false
-                }
-                return (key == "name" && comparison == .equals && value == Node("not_unique"))
-            }) else {
-                return 0
-            }
-            return 1
-        default:
-            return 0
-        }
-    }
-    func schema(_ schema: Schema) throws {}
-    @discardableResult
-    public func raw(_ query: String, _ values: [Node] = []) throws -> Node {
-        return .null
-    }
-
-    func makeConnection() throws -> Connection {
-        return self
-    }
-}
-
 // Mock Entity to test DB validators
 final class TestUser: Entity {
     let storage = Storage()
@@ -869,3 +831,4 @@ final class TestUser: Entity {
     static func prepare(_ database: Database) throws {}
     static func revert(_ database: Database) throws {}
 }
+
