@@ -1,13 +1,8 @@
 # Forms
 
 ![Swift](http://img.shields.io/badge/swift-3.1-brightgreen.svg)
-![Vapor](http://img.shields.io/badge/vapor-1.5-brightgreen.svg)
+![Vapor](http://img.shields.io/badge/vapor-2.0-brightgreen.svg)
 ![Travis](https://travis-ci.org/vapor-community/forms.svg?branch=master)
-
----
-
-**Vapor 2**: this package is *not* compatible with Vapor 2 beta. Once Vapor 2
-moves out of beta, this package will be updated.
 
 ---
 
@@ -23,8 +18,15 @@ Don't forget to add to your `providers` if you want to use built-in Leaf tags:
 import Vapor
 import Forms
 
-let drop = Droplet()
-try drop.addProvider(Forms.Provider.self)
+extension Config {
+    ...
+
+    private func setupProviders() throws {
+        try addProvider(Forms.Provider.self)
+        ...
+    }
+}
+
 ```
 
 ## Features
