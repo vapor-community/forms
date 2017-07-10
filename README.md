@@ -3,6 +3,7 @@
 ![Swift](http://img.shields.io/badge/swift-3.1-brightgreen.svg)
 ![Vapor](http://img.shields.io/badge/vapor-2.0-brightgreen.svg)
 ![Travis](https://travis-ci.org/vapor-community/forms.svg?branch=master)
+[![CircleCI](https://circleci.com/gh/vapor-community/forms.svg?style=svg)](https://circleci.com/gh/vapor-community/forms)
 
 ---
 
