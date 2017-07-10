@@ -76,9 +76,17 @@ class FormsTests: XCTestCase {
         ]
     }
 
-    override func setUp(){
+    override func setUp() {
         stem = Stem(DataFile())
-        //    Database.default = Database(TestDriver())
+        let database = Database(try! MemoryDriver())
+        Database.default = database
+        try? TestUser.prepare(database)
+    }
+
+    override func tearDown() {
+        if let database = Database.default {
+            try? TestUser.revert(database)
+        }
     }
 
     func expectMatch(_ test: FieldValidationResult, _ match: Node, fail: () -> Void) {
@@ -252,6 +260,9 @@ class FormsTests: XCTestCase {
     }
 
     func testUniqueFieldValidation() {
+        let duplicateUser = TestUser(name: "not_unique")
+        try? duplicateUser.save()
+
         // Expect success because this count should return 0
         expectSuccess(StringField(UniqueFieldValidator<TestUser>(column: "name")).validate("filter_applied")) { XCTFail() }
         // Expect failure because this count should return 1
@@ -773,7 +784,7 @@ class FormsTests: XCTestCase {
             let password = "notmypassword"
             let passwordPart = Part(headers: [:], body: password.makeBytes())
             let passwordField = Field(name: "password", filename: nil, part: passwordPart)
-            let request = try Request(method: .get, uri: "form-data")
+            let request = Request(method: .get, uri: "form-data")
             request.formData = [
                 "username": userField,
                 "password": passwordField
@@ -828,7 +839,15 @@ final class TestUser: Entity {
     func makeRow() throws -> Row {
         return try makeNode(in: rowContext).converted()
     }
-    static func prepare(_ database: Database) throws {}
-    static func revert(_ database: Database) throws {}
+    static func prepare(_ database: Database) throws {
+        try database.create(TestUser.self) { builder in
+            builder.id()
+            builder.string("name")
+        }
+    }
+
+    static func revert(_ database: Database) throws {
+        try database.delete(TestUser.self)
+    }
 }
 
