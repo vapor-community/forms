@@ -529,6 +529,7 @@ class FormsTests: XCTestCase {
     func testTagIfFieldHasErrors() {
         stem.register(IfFieldHasErrors())
         let leaf = try! stem.spawnLeaf(raw: "#ifFieldHasErrors(fieldset, \"fieldName\") { HasErrors }")
+
         do {
             var fieldset = Fieldset(["fieldName": StringField()])
             fieldset.errors["fieldName"].append(FieldError.requiredMissing)

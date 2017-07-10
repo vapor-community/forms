@@ -9,7 +9,7 @@ public final class IfFieldHasErrors: Tag {
             let fieldset = arguments[0]?.object,
             let fieldName = arguments[1]?.string,
             let errors = fieldset[fieldName]?["errors"]
-            else { return false }
+            else { return nil }
         return errors
     }
     
