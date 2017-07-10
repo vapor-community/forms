@@ -1,0 +1,214 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "BCrypt",
+        "repositoryURL": "https://github.com/vapor/bcrypt.git",
+        "state": {
+          "branch": null,
+          "revision": "c14e6b9ac07b685bc2469699f487214f670e540b",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "Bits",
+        "repositoryURL": "https://github.com/vapor/bits.git",
+        "state": {
+          "branch": null,
+          "revision": "389f1344cd5819e94c54ee18b35c2bc5589c7f05",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "CTLS",
+        "repositoryURL": "https://github.com/vapor/ctls.git",
+        "state": {
+          "branch": null,
+          "revision": "20cecfae4abeea245cb4f8cc739c160fcca046b8",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "Console",
+        "repositoryURL": "https://github.com/vapor/console.git",
+        "state": {
+          "branch": null,
+          "revision": "4badfa71e270ce1bde5b30349964ed24659f0744",
+          "version": "2.1.0"
+        }
+      },
+      {
+        "package": "Core",
+        "repositoryURL": "https://github.com/vapor/core.git",
+        "state": {
+          "branch": null,
+          "revision": "03af35140315ad2d5cbf6c197bcf4a64b9c5e24d",
+          "version": "2.0.2"
+        }
+      },
+      {
+        "package": "Crypto",
+        "repositoryURL": "https://github.com/vapor/crypto.git",
+        "state": {
+          "branch": null,
+          "revision": "e999fa960b63746e4d0a040eade7f2620e0de0af",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "Debugging",
+        "repositoryURL": "https://github.com/vapor/debugging.git",
+        "state": {
+          "branch": null,
+          "revision": "bbd261de01c47f2e4d9acf4097807349330194ea",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "Engine",
+        "repositoryURL": "https://github.com/vapor/engine.git",
+        "state": {
+          "branch": null,
+          "revision": "6bb5001c6f41b326df1570a11218cdf9e6f48a6c",
+          "version": "2.1.0"
+        }
+      },
+      {
+        "package": "Fluent",
+        "repositoryURL": "https://github.com/vapor/fluent.git",
+        "state": {
+          "branch": null,
+          "revision": "0ebaa5e031ac9e842861790d7ed17deafdb631e9",
+          "version": "2.1.1"
+        }
+      },
+      {
+        "package": "FluentProvider",
+        "repositoryURL": "https://github.com/vapor/fluent-provider.git",
+        "state": {
+          "branch": null,
+          "revision": "baaa6091c175382661d3a8a2b2ecb440986a37cb",
+          "version": "1.1.1"
+        }
+      },
+      {
+        "package": "JSON",
+        "repositoryURL": "https://github.com/vapor/json.git",
+        "state": {
+          "branch": null,
+          "revision": "78ed34f9f706af390b8c8f50f00191bafe5ce76f",
+          "version": "2.0.2"
+        }
+      },
+      {
+        "package": "Leaf",
+        "repositoryURL": "https://github.com/vapor/leaf.git",
+        "state": {
+          "branch": null,
+          "revision": "1ce38e9b8bc1620751d3203c0f9c14e0bb04587a",
+          "version": "2.0.1"
+        }
+      },
+      {
+        "package": "LeafProvider",
+        "repositoryURL": "https://github.com/vapor/leaf-provider.git",
+        "state": {
+          "branch": null,
+          "revision": "003276dcb89f9dfecaa72623e3ff597a3432ee3d",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "Multipart",
+        "repositoryURL": "https://github.com/vapor/multipart.git",
+        "state": {
+          "branch": null,
+          "revision": "a91bd2091a756d0a6585beef3fb714fb5d764c33",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "Node",
+        "repositoryURL": "https://github.com/vapor/node.git",
+        "state": {
+          "branch": null,
+          "revision": "26b0547ac4bd5ce8f7ba0217371bdee6c8f1c886",
+          "version": "2.0.3"
+        }
+      },
+      {
+        "package": "Random",
+        "repositoryURL": "https://github.com/vapor/random.git",
+        "state": {
+          "branch": null,
+          "revision": "813e49b1bacba950f0149eab3277e02247255b42",
+          "version": "1.1.1"
+        }
+      },
+      {
+        "package": "Routing",
+        "repositoryURL": "https://github.com/vapor/routing.git",
+        "state": {
+          "branch": null,
+          "revision": "93814144ab6a506180fc831ae2059073f73aa917",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "SQLite",
+        "repositoryURL": "https://github.com/vapor/sqlite.git",
+        "state": {
+          "branch": null,
+          "revision": "c2352cee0567a563b55cb03524cb255c70f5ef56",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "Sockets",
+        "repositoryURL": "https://github.com/vapor/sockets.git",
+        "state": {
+          "branch": null,
+          "revision": "9f58e4e718388c45ad36fe35c0d7fda323b49a9d",
+          "version": "2.0.1"
+        }
+      },
+      {
+        "package": "TLS",
+        "repositoryURL": "https://github.com/vapor/tls.git",
+        "state": {
+          "branch": null,
+          "revision": "a2a2c4c38ac8568e800dfa9f99923abff1072603",
+          "version": "2.0.4"
+        }
+      },
+      {
+        "package": "Validation",
+        "repositoryURL": "https://github.com/vapor/validation.git",
+        "state": {
+          "branch": null,
+          "revision": "22004efe55060bb707fda0cac0508506c7730533",
+          "version": "1.0.1"
+        }
+      },
+      {
+        "package": "ValidationProvider",
+        "repositoryURL": "https://github.com/vapor/validation-provider.git",
+        "state": {
+          "branch": null,
+          "revision": "aeddfbbc0a358cea7b9519a87e393f169f416b18",
+          "version": "1.1.0"
+        }
+      },
+      {
+        "package": "Vapor",
+        "repositoryURL": "https://github.com/vapor/vapor.git",
+        "state": {
+          "branch": null,
+          "revision": "ed7e106e01419baca92e647edf9e1da44ea732b9",
+          "version": "2.1.2"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

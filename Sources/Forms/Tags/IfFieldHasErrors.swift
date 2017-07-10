@@ -1,23 +1,19 @@
 import Leaf
 
 public final class IfFieldHasErrors: Tag {
-  public let name = "ifFieldHasErrors"
-
-  public func run(stem: Stem, context: Context, tagTemplate: TagTemplate, arguments: [Argument]) throws -> Node? {
+    public let name = "ifFieldHasErrors"
+    
+    public func run(tagTemplate: TagTemplate, arguments: ArgumentList) throws -> Node? {
+        guard
+            arguments.count == 2,
+            let fieldset = arguments[0]?.object,
+            let fieldName = arguments[1]?.string,
+            let errors = fieldset[fieldName]?["errors"]
+            else { return false }
+        return errors
+    }
+    
+    public func run(stem: Stem, context: Context, tagTemplate: TagTemplate, arguments: [Argument]) throws -> Node? {
     return nil
   }
-
-  // Arg1: Fieldset
-  // Arg2: Field name
-  // Render if there are errors in the field's errors array
-  public func shouldRender(stem: Stem, context: Context, tagTemplate: TagTemplate, arguments: [Argument], value: Node?) -> Bool {
-    guard
-      arguments.count == 2,
-      let fieldset = arguments[0].value?.object,
-      let fieldName = arguments[1].value?.string,
-      let errors = fieldset[fieldName]?["errors"]?.array
-    else { return false }
-    return !errors.isEmpty
-  }
-
 }
