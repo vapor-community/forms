@@ -1,13 +1,12 @@
 import Vapor
 import Leaf
-import VaporLeaf
+import LeafProvider
 
 public final class Provider: Vapor.Provider {
-  public init(config: Config) {}
+    public static let repositoryName = "Forms"
 
-  public func boot(_ drop: Droplet) {
-    do {
-        let stem = try drop.stem()
+    public func boot(_ drop: Droplet) {
+        guard let stem = drop.stem else { return }
         let tags: [Tag] = [
             ErrorsForField(),
             IfFieldHasErrors(),
@@ -16,8 +15,10 @@ public final class Provider: Vapor.Provider {
             ValueForField()
         ]
         tags.forEach(stem.register)
-    } catch {}
-  }
-
-  public func beforeRun(_ drop: Droplet) {} // Remove when able
+    }
+    
+    // Remove when able
+    public func beforeRun(_ drop: Droplet) {}
+    public func boot(_ config: Config) throws {}
+    public init(config: Config) {}
 }

@@ -1,8 +1,20 @@
-os:
-  - linux
 language: generic
-sudo: required
-dist: trusty
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode8.3
+
+before_install:
+  - gem install xcpretty
+  - brew tap vapor/tap
+  - brew update
+  - brew install vapor
+
 script:
-  - eval "$(curl -sL https://swift.vapor.sh/ci-3.1)"
-  - eval "$(curl -sL https://swift.vapor.sh/codecov)"
+  # run unit tests
+  - swift build --configuration release
+  - swift package generate-xcodeproj
+  - xcodebuild -scheme Forms -enableCodeCoverage YES test | xcpretty  # instead of swift test
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

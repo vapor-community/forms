@@ -1,5 +1,5 @@
 import Vapor
-import Fluent
+import FluentProvider
 
 /**
  Validates if the value exists on the database
@@ -16,7 +16,7 @@ public class UniqueFieldValidator<ModelType: Entity>: FieldValidator<String> {
   public override func validate(input value: String) -> FieldValidationResult {
     // Let's create the main filter
     do {
-      let query = try ModelType.query()
+      let query = try ModelType.makeQuery()
       try query.filter(self.column, value)
       // If we have addition filters, add them
       if let filters = self.additionalFilters {
