@@ -1,0 +1,20 @@
+version: 2
+jobs:
+    build:
+        working_directory: ~/app
+        docker:
+            - image: swift:3.1
+        steps:
+            - checkout
+            - restore_cache:
+                keys:
+                    - spm-4-deps-{{ checksum "Package.resolved" }}
+            - run: swift build -c release
+            - run: swift test
+            - save_cache:
+                keys:
+                    - spm-4-deps-{{ checksum "Package.resolved" }}
+                paths:
+                    - .build/checkouts
+                    - .build/repositories
+                    - .build/workspace-state.json
