@@ -7,13 +7,11 @@ jobs:
         steps:
             - checkout
             - restore_cache:
-                keys:
-                    - spm-4-deps-{{ checksum "Package.resolved" }}
+                key: spm-4-deps-{{ checksum "Package.resolved" }}
             - run: swift build -c release
             - run: swift test
             - save_cache:
-                keys:
-                    - spm-4-deps-{{ checksum "Package.resolved" }}
+                key: spm-4-deps-{{ checksum "Package.resolved" }}
                 paths:
                     - .build/checkouts
                     - .build/repositories
